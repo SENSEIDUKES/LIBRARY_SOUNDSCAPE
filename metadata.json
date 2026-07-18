@@ -1,0 +1,6 @@
+{
+  "name": "SEIHouse: Light Novel Soundscape",
+  "description": "Translates wuxia/xuanhuan/litrpg chapters into immersion enhancing soundscapes.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
