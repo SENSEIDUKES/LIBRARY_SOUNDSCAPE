@@ -2,19 +2,34 @@
 <img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
 </div>
 
-# Run and deploy your AI Studio app
+# SEN Lyria Studio & Soundscape Vault
 
-This contains everything you need to run your app locally.
+An East Asian traditional soundscape generator powered by Google Gemini and Lyria AI music synthesis.
 
-View your app in AI Studio: https://aistudio-autopush.corp.google.com/apps/drive/1_1PEX6DjRsOnYxpUp4gPOg7S6cPlkfmR
+## Features
+
+- **Full-Stack Gemini & Lyria Engine**: Secure Express backend server proxying `@google/genai` API requests (`/api/gemini/lyria`, `/api/gemini/refine-prompt`, `/api/gemini/generate-title`), preventing client-side key exposure and providing reliable model streaming (`lyria-3-pro-preview`, `lyria-3-clip-preview`, `gemini-3.6-flash`).
+- **Dynamic Song Title Randomization**: Contextual, culturally-tuned song title generation engine ensuring unique 2-3 word titles and preventing duplicate outputs. Includes a one-click title reroll button (`🎲`) on every track card.
+- **Shortened Download Filenames**: Clean, compact download string formatting (`Title_X7B.mp3`) replacing long messy filenames for single MP3 downloads and batch ZIP exports.
+- **Cultural Song Differentiation**: Automatic visual theme distinction with distinct color palettes:
+  - 🟦 **Chinese**: Deep sapphire blue
+  - 🟩 **Japanese**: Emerald green
+  - 🟥 **Korean**: Crimson rose red
+  - 🟪 **Western**: Mystical purple
+- **Real Web Audio BPM Detector**: Onset energy peak analysis for generated audio tracks and uploaded MP3/WAV files, plus an interactive tap tempo engine.
+- **Batch ZIP Export**: Select multiple favorite soundscapes in the Soundscape Vault and export them as a unified ZIP archive containing audio files, lyrics, and metadata summaries.
+- **Chapter Text Parser & Prompt Builder**: Extract Xianxia, Wuxia, and traditional East Asian narrative themes into high-fidelity music prompts.
+- **Soundscape Vault**: Local persistent storage with rehydrated audio playback and favorites management.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js v18+
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Set `GEMINI_API_KEY` in `.env.local`
+3. Run dev server:
    `npm run dev`
+4. Run test suite:
+   `npm run test`
+

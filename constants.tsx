@@ -22,7 +22,7 @@ export const EXAMPLE_SONGS: ExampleSong[] = [
   {
     id: '1',
     title: 'Heavenly Tribulation',
-    artist: 'SEIHouse Formations',
+    artist: 'SEN Formations',
     coverUrl: 'https://picsum.photos/seed/music1/400/400',
     prompt: 'A high-intensity Chinese wuxia track during a dangerous Heavenly Tribulation. Crashing thunder, aggressive drums, intense Erhu, reflecting dread and triumph. Intensity: 0.9',
     duration: '3:45',
@@ -31,7 +31,7 @@ export const EXAMPLE_SONGS: ExampleSong[] = [
   {
     id: '2',
     title: 'Cherry Blossom Duel',
-    artist: 'SEIHouse Formations',
+    artist: 'SEN Formations',
     coverUrl: 'https://picsum.photos/seed/music2/400/400',
     prompt: 'A fast-paced Japanese instrumental duel theme. Shamisen and Koto playing rapidly over taiko drums. Tension and focus. Intensity: 0.8',
     duration: '2:30',
@@ -40,7 +40,7 @@ export const EXAMPLE_SONGS: ExampleSong[] = [
   {
     id: '3',
     title: 'Serene Bamboo Forest',
-    artist: 'SEIHouse Formations',
+    artist: 'SEN Formations',
     coverUrl: 'https://picsum.photos/seed/music3/400/400',
     prompt: 'A peaceful Chinese instrumental ambient track. Soft Guzheng, bamboo flute (Dizi), and gentle wind. Good for cultivation and meditation. Intensity: 0.1',
     duration: '4:12',

@@ -1,11 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   getRandomItem,
   sanitizeFilename,
   toPascalCase,
   getAutoExportName,
-  extractMetadata
+  extractMetadata,
+  formatShareText,
+  copyToClipboard
 } from '../src/utils/helpers';
+import { generateRandomTitle, rerollTitle } from '../src/utils/titleUtils';
+import { SongResult } from '../types';
 
 describe('getRandomItem', () => {
   it('should return a random item from the array', () => {
@@ -40,28 +44,46 @@ describe('toPascalCase', () => {
 });
 
 describe('getAutoExportName', () => {
-  it('should use fallback mood and scene if not in config', () => {
+  it('should generate short title-based export name when title exists', () => {
     const result = getAutoExportName('epic adventure in high mountain', 'Ancient Melody');
-    expect(result).toContain('AncientMelody_Adventure_HighMountain_');
+    expect(result).toMatch(/^AncientMelody_[A-Z0-9]{3}$/);
+    expect(result.length).toBeLessThan(25);
   });
 
-  it('should parse intensity from prompt', () => {
-    const result = getAutoExportName('intense fight with heavy scale', 'Showdown');
-    expect(result).toContain('Showdown_Fighting_EtherealRealm_Intense_');
+  it('should truncate excessively long titles for export name', () => {
+    const result = getAutoExportName('prompt', 'Very Super Long Extremely Atmospheric Heavenly Soundscape Title That Never Ends');
+    expect(result.length).toBeLessThan(30);
   });
 
-  it('should use explicit config when provided', () => {
-    const result = getAutoExportName(null, 'Custom', {
+  it('should use explicit mood and scene fallback when title is missing', () => {
+    const result = getAutoExportName(null, null, {
       mood: 'Sorrowful',
       sceneAtmosphere: 'ancient temple setting',
-      intensity: 0.95
     });
-    expect(result).toContain('Custom_Sorrowful_AncientTemple_Nightmare_');
+    expect(result).toMatch(/^Sorrowful_AncientTem_[A-Z0-9]{3}$/);
+    expect(result.length).toBeLessThan(25);
   });
 
   it('should handle empty parameters gracefully', () => {
     const result = getAutoExportName(null, null);
-    expect(result).toContain('Atmospheric_EtherealRealm_Moderate_');
+    expect(result).toMatch(/^Atmospheri_EtherealRe_[A-Z0-9]{3}$/);
+  });
+});
+
+describe('generateRandomTitle & rerollTitle', () => {
+  it('should generate short randomized titles for various cultures', () => {
+    const title1 = generateRandomTitle({ culture: 'Chinese', mood: 'Tribulation' });
+    const title2 = generateRandomTitle({ culture: 'Japanese', mood: 'Duel' });
+    expect(title1).toBeTruthy();
+    expect(title2).toBeTruthy();
+    expect(title1.split(' ').length).toBeLessThanOrEqual(4);
+  });
+
+  it('should reroll a title to produce a new title', () => {
+    const initialTitle = 'Celestial Lotus';
+    const newTitle = rerollTitle(initialTitle, { culture: 'Chinese' });
+    expect(typeof newTitle).toBe('string');
+    expect(newTitle.length).toBeGreaterThan(0);
   });
 });
 
@@ -78,20 +100,86 @@ Genre: Xianxia, Traditional, Guqin
     expect(result.genres).toEqual(['Xianxia', 'Traditional', 'Guqin']);
   });
 
-  it('should use fallback key and tempo when parsing fails', () => {
+  it('should return null key and pacing when explicit Key and BPM are absent', () => {
     const result = extractMetadata('Some random description text without key and bpm', {
       mood: 'sad',
-      pacing: 'frenzied'
+      pacing: 'frenzied pacing'
     });
-    expect(result.key).toBe('D Minor');
-    expect(result.tempo).toBe('145 BPM');
+    expect(result.key).toBeNull();
+    expect(result.tempo).toBe('frenzied pacing');
     expect(result.genres).toContain('Soundscape');
   });
 
-  it('should handle empty parameters gracefully', () => {
+  it('should handle empty parameters gracefully without fake key or BPM labels', () => {
     const result = extractMetadata('');
-    expect(result.key).toBe('G Minor');
-    expect(result.tempo).toBe('90 BPM');
+    expect(result.key).toBeNull();
+    expect(result.tempo).toBeNull();
     expect(result.genres).toEqual(['Soundscape']);
   });
 });
+
+describe('formatShareText', () => {
+  const mockResult: SongResult = {
+    id: 'test-123',
+    status: 'completed',
+    logs: [],
+    audioUrl: 'https://example.com/audio.mp3',
+    coverImageUrl: null,
+    title: 'Thunder Dao Tribulation',
+    lyrics: '',
+    metadata: 'Key: D Minor\nBPM: 130 bpm\nGenre: Xianxia, Guqin',
+    fullPrompt: 'epic music',
+    error: null,
+    timestamp: new Date(),
+    isExpanded: false,
+    originalPrompt: 'epic music',
+    originalLyricsOption: 'Instrumental',
+    chapterText: 'The cultivator raised his sword against the flashing lightning clouds.',
+    soundscapeConfig: {
+      mood: 'Fighting',
+      instrument: 'Guqin',
+      pacing: 'frenzied',
+      mainTexture: 'Intense',
+      environmentalTexture: 'Thunder',
+      sceneAtmosphere: 'High Mountain',
+      emotionalDirection: 'Tense',
+      endingDirection: 'Fade',
+      vocals: 'None'
+    }
+  };
+
+  it('should format full metadata and share link correctly', () => {
+    const text = formatShareText(mockResult, 'https://app.example.com');
+    expect(text).toContain('🎵 SEN Soundscape: Thunder Dao Tribulation');
+    expect(text).toContain('🎹 Key: D Minor • Tempo: 130 bpm');
+    expect(text).toContain('🏷️ Genres: Xianxia, Guqin');
+    expect(text).toContain('✨ Atmosphere: Fighting • Guqin • High Mountain');
+    expect(text).toContain('📜 Narrative: "The cultivator raised his sword against the flashing lightning clouds."');
+    expect(text).toContain('🔗 Listen: https://app.example.com#soundscape-test-123');
+  });
+
+  it('should truncate long narrative chapter text in snippet', () => {
+    const longTextResult = {
+      ...mockResult,
+      chapterText: 'A'.repeat(200)
+    };
+    const text = formatShareText(longTextResult, 'https://app.example.com');
+    expect(text).toContain('📜 Narrative: "' + 'A'.repeat(117) + '..."');
+  });
+});
+
+describe('copyToClipboard', () => {
+  it('should call navigator.clipboard.writeText when available', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock
+      }
+    });
+
+    const success = await copyToClipboard('Hello World');
+    expect(success).toBe(true);
+    expect(writeTextMock).toHaveBeenCalledWith('Hello World');
+  });
+});
+

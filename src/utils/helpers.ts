@@ -7,6 +7,7 @@
  * - Selecting random items from arrays for prompt generation.
  */
 import { logFunctionCall } from './logger';
+import { SongResult } from '../../types';
 
 /**
  * Returns a random item from the provided array.
@@ -50,122 +51,75 @@ export const toPascalCase = (str: string): string => {
 };
 
 /**
- * Auto-names exports based on Mood, Scene and Intensity.
- * Follows layout: Mood_Scene_Intensity
- * Example: Adventure_DarkCave_Nightmare or Fighting_Tournament_Intense
+ * Auto-names exports using short, clean title identifiers to keep filenames brief and clean.
+ * Limits overall filename length to prevent excessively long download names.
+ * Example: "Heavenly Tribulation" -> "HeavenlyTribulation_X7B"
  */
 export const getAutoExportName = (
   originalPrompt: string | null,
   title: string | null,
   config?: HelperSoundscapeConfig
 ): string => {
-  const textToAnalyze = `${originalPrompt || ''} ${title || ''} ${config?.mood || ''} ${config?.sceneAtmosphere || ''}`.toLowerCase();
+  const uniqueTag = Math.random().toString(36).substring(2, 5).toUpperCase().padEnd(3, '0');
 
-  // 1. DETERMINE MOOD
+  // If a specific song title exists, use a short formatted version of the title
+  if (title && title.trim().length > 0) {
+    const pascalTitle = toPascalCase(title);
+    // Truncate title if it's overly long (max 22 characters for title portion)
+    const truncatedTitle = pascalTitle.length > 22 ? pascalTitle.slice(0, 22) : pascalTitle;
+    return `${truncatedTitle}_${uniqueTag}`;
+  }
+
+  // Fallback if no title is present: parse mood and scene from config / prompt
+  const textToAnalyze = `${originalPrompt || ''} ${config?.mood || ''} ${config?.sceneAtmosphere || ''}`.toLowerCase();
+
   let mood = '';
   if (config?.mood) {
     mood = toPascalCase(config.mood);
   } else {
-    if (textToAnalyze.includes('adventure') || textToAnalyze.includes('quest') || textToAnalyze.includes('travel') || textToAnalyze.includes('journey')) {
+    if (textToAnalyze.includes('adventure') || textToAnalyze.includes('quest') || textToAnalyze.includes('journey')) {
       mood = 'Adventure';
-    } else if (textToAnalyze.includes('fight') || textToAnalyze.includes('combat') || textToAnalyze.includes('battle') || textToAnalyze.includes('duel') || textToAnalyze.includes('warrior') || textToAnalyze.includes('tournament')) {
+    } else if (textToAnalyze.includes('fight') || textToAnalyze.includes('combat') || textToAnalyze.includes('battle') || textToAnalyze.includes('duel')) {
       mood = 'Fighting';
-    } else if (textToAnalyze.includes('sad') || textToAnalyze.includes('grief') || textToAnalyze.includes('sorrow') || textToAnalyze.includes('mourn') || textToAnalyze.includes('tragic') || textToAnalyze.includes('tribulation')) {
+    } else if (textToAnalyze.includes('sad') || textToAnalyze.includes('grief') || textToAnalyze.includes('sorrow') || textToAnalyze.includes('tribulation')) {
       mood = 'Sorrowful';
-    } else if (textToAnalyze.includes('peace') || textToAnalyze.includes('calm') || textToAnalyze.includes('seren') || textToAnalyze.includes('meditat') || textToAnalyze.includes('tranquil') || textToAnalyze.includes('cultivat')) {
+    } else if (textToAnalyze.includes('peace') || textToAnalyze.includes('calm') || textToAnalyze.includes('seren') || textToAnalyze.includes('meditat')) {
       mood = 'Serenity';
-    } else if (textToAnalyze.includes('mystery') || textToAnalyze.includes('dark') || textToAnalyze.includes('hidden') || textToAnalyze.includes('secret') || textToAnalyze.includes('dread') || textToAnalyze.includes('fear') || textToAnalyze.includes('ghost')) {
-      mood = 'Dread';
-    } else if (textToAnalyze.includes('epic') || textToAnalyze.includes('triumph') || textToAnalyze.includes('glor') || textToAnalyze.includes('grand') || textToAnalyze.includes('victory') || textToAnalyze.includes('heroic')) {
+    } else if (textToAnalyze.includes('epic') || textToAnalyze.includes('triumph') || textToAnalyze.includes('victory')) {
       mood = 'Triumphant';
-    } else if (textToAnalyze.includes('love') || textToAnalyze.includes('romance') || textToAnalyze.includes('passion') || textToAnalyze.includes('embrace')) {
-      mood = 'Romance';
     } else {
       mood = 'Atmospheric';
     }
   }
 
-  // 2. DETERMINE SCENE
   let scene = '';
   if (config?.sceneAtmosphere) {
-    // clean up words like "setting" or "atmosphere" to make active scene names clean
     const cleanedScene = config.sceneAtmosphere
       .replace(/\b(setting|atmosphere|area|scene|environment)\b/gi, '')
       .trim();
-    scene = toPascalCase(cleanedScene || 'Soundscape');
+    scene = toPascalCase(cleanedScene || 'Realm');
   } else {
-    if (textToAnalyze.includes('cave') || textToAnalyze.includes('cavern') || textToAnalyze.includes('tunnel') || textToAnalyze.includes('underground')) {
+    if (textToAnalyze.includes('cave') || textToAnalyze.includes('cavern')) {
       scene = 'DarkCave';
-    } else if (textToAnalyze.includes('tournament') || textToAnalyze.includes('arena') || textToAnalyze.includes('ring') || textToAnalyze.includes('stage')) {
-      scene = 'Tournament';
-    } else if (textToAnalyze.includes('temple') || textToAnalyze.includes('shrine') || textToAnalyze.includes('hall') || textToAnalyze.includes('monastery')) {
-      scene = 'AncientTemple';
-    } else if (textToAnalyze.includes('mountain') || textToAnalyze.includes('peak') || textToAnalyze.includes('cliff') || textToAnalyze.includes('sect')) {
+    } else if (textToAnalyze.includes('temple') || textToAnalyze.includes('shrine')) {
+      scene = 'Temple';
+    } else if (textToAnalyze.includes('mountain') || textToAnalyze.includes('peak')) {
       scene = 'HighMountain';
-    } else if (textToAnalyze.includes('battlefield') || textToAnalyze.includes('clash') || textToAnalyze.includes('army')) {
-      scene = 'Battlefield';
-    } else if (textToAnalyze.includes('forest') || textToAnalyze.includes('wood') || textToAnalyze.includes('tree') || textToAnalyze.includes('bamboo')) {
+    } else if (textToAnalyze.includes('forest') || textToAnalyze.includes('bamboo')) {
       scene = 'BambooForest';
-    } else if (textToAnalyze.includes('courtyard') || textToAnalyze.includes('garden') || textToAnalyze.includes('pond')) {
-      scene = 'AncientCourtyard';
-    } else if (textToAnalyze.includes('city') || textToAnalyze.includes('town') || textToAnalyze.includes('market') || textToAnalyze.includes('street')) {
-      scene = 'BustlingCity';
-    } else if (textToAnalyze.includes('sea') || textToAnalyze.includes('ocean') || textToAnalyze.includes('water') || textToAnalyze.includes('river') || textToAnalyze.includes('lake') || textToAnalyze.includes('abyss')) {
-      scene = 'DeepAbyss';
     } else {
       scene = 'EtherealRealm';
     }
   }
 
-  // 3. DETERMINE INTENSITY
-  let intensityVal = 0.5;
-  if (config?.intensity !== undefined) {
-    if (typeof config.intensity === 'number') {
-      intensityVal = config.intensity;
-    } else {
-      const parsedFloat = parseFloat(config.intensity);
-      if (!isNaN(parsedFloat)) intensityVal = parsedFloat;
-    }
-  } else {
-    // try to parse "Intensity: 0.9" or "intensity: 0.1" from prompt
-    const intensityMatch = textToAnalyze.match(/intensity:\s*([0-9.]+)/i);
-    if (intensityMatch) {
-      const parsedFloat = parseFloat(intensityMatch[1]);
-      if (!isNaN(parsedFloat)) intensityVal = parsedFloat;
-    } else {
-      // try scanning words for heuristics
-      if (textToAnalyze.includes('nightmare') || textToAnalyze.includes('apocalypse') || textToAnalyze.includes('frenzied') || textToAnalyze.includes('chaotic') || textToAnalyze.includes('cataclysm')) {
-        intensityVal = 0.91;
-      } else if (textToAnalyze.includes('intense') || textToAnalyze.includes('aggressive') || textToAnalyze.includes('furious') || textToAnalyze.includes('heavy') || textToAnalyze.includes('high intensity')) {
-        intensityVal = 0.75;
-      } else if (textToAnalyze.includes('peaceful') || textToAnalyze.includes('soft') || textToAnalyze.includes('gentle') || textToAnalyze.includes('low intensity') || textToAnalyze.includes('ambient')) {
-        intensityVal = 0.15;
-      }
-    }
-  }
-
-  let intensity = 'Moderate';
-  if (intensityVal > 0.82) {
-    intensity = 'Nightmare';
-  } else if (intensityVal > 0.6) {
-    intensity = 'Intense';
-  } else if (intensityVal < 0.35) {
-    intensity = 'Tranquil';
-  }
-
-  // Compose export name safely using alphanumeric formatting with PascalCase title and unique random suffix
-  const cleanTitle = title ? toPascalCase(title) : '';
-  const baseName = cleanTitle 
-    ? `${cleanTitle}_${mood}_${scene}_${intensity}` 
-    : `${mood}_${scene}_${intensity}`;
-
-  const uniqueTag = Math.random().toString(36).substring(2, 6).toUpperCase().padEnd(4, '0');
-  return `${baseName}_${uniqueTag}`;
+  const shortMood = mood.slice(0, 10);
+  const shortScene = scene.slice(0, 10);
+  return `${shortMood}_${shortScene}_${uniqueTag}`;
 };
 
 export interface ExtractedMetadata {
-  key: string;
-  tempo: string;
+  key: string | null;
+  tempo: string | null;
   genres: string[];
 }
 
@@ -206,32 +160,11 @@ export const extractMetadata = (
     }
   }
 
-  // Context-aware Xianxia/Novel musical fallback engine
-  if (!key) {
-    const moodLower = (soundscapeConfig?.mood || '').toLowerCase();
-    if (moodLower.includes('sad') || moodLower.includes('sorrow') || moodLower.includes('grief') || moodLower.includes('mourn') || moodLower.includes('tragic')) {
-      key = 'D Minor';
-    } else if (moodLower.includes('peace') || moodLower.includes('calm') || moodLower.includes('seren') || moodLower.includes('tranquil') || moodLower.includes('meditat')) {
-      key = 'C Major';
-    } else if (moodLower.includes('mystery') || moodLower.includes('tense') || moodLower.includes('dread') || moodLower.includes('dark')) {
-      key = 'A Minor';
-    } else if (moodLower.includes('epic') || moodLower.includes('triumph') || moodLower.includes('grand') || moodLower.includes('heroic')) {
-      key = 'E Major';
-    } else {
-      key = 'G Minor'; // classic expressive pentatonic scale default for novel soundscapes
-    }
-  }
-
   if (!tempo) {
-    const pacingLower = (soundscapeConfig?.pacing || '').toLowerCase();
-    if (pacingLower.includes('slow')) {
-      tempo = '72 BPM';
-    } else if (pacingLower.includes('frenzied') || pacingLower.includes('frenzy')) {
-      tempo = '145 BPM';
-    } else if (pacingLower.includes('fast')) {
-      tempo = '128 BPM';
+    if (soundscapeConfig?.pacing) {
+      tempo = soundscapeConfig.pacing;
     } else {
-      tempo = '90 BPM'; // moderate pacing default
+      tempo = null;
     }
   }
 
@@ -244,6 +177,238 @@ export const extractMetadata = (
 
   return { key, tempo, genres };
 };
+
+/**
+ * Formats a shareable text card representation of a generated soundscape,
+ * including key metadata, atmosphere parameters, narrative excerpt, and direct link.
+ */
+export const formatShareText = (
+  result: SongResult,
+  baseUrl?: string
+): string => {
+  const extMeta = extractMetadata(result.metadata, result.soundscapeConfig);
+  const title = result.title || 'Celestial Soundscape';
+
+  let shareUrl = '';
+  if (baseUrl) {
+    shareUrl = `${baseUrl.split('#')[0]}#soundscape-${result.id}`;
+  } else if (typeof window !== 'undefined' && window.location) {
+    shareUrl = `${window.location.origin}${window.location.pathname}#soundscape-${result.id}`;
+  } else {
+    shareUrl = `#soundscape-${result.id}`;
+  }
+
+  const metaParts = [];
+  if (extMeta.key) metaParts.push(`Key: ${extMeta.key}`);
+  if (extMeta.tempo) metaParts.push(`Tempo: ${extMeta.tempo}`);
+  
+  const lines: string[] = [
+    `🎵 SEN Soundscape: ${title}`,
+  ];
+  if (metaParts.length > 0) {
+    lines.push(`🎹 ${metaParts.join(' • ')}`);
+  }
+
+  if (extMeta.genres && extMeta.genres.length > 0) {
+    lines.push(`🏷️ Genres: ${extMeta.genres.join(', ')}`);
+  }
+
+  if (result.soundscapeConfig) {
+    const { mood, instrument, sceneAtmosphere } = result.soundscapeConfig;
+    const atmosphereParts = [mood, instrument, sceneAtmosphere].filter(Boolean);
+    if (atmosphereParts.length > 0) {
+      lines.push(`✨ Atmosphere: ${atmosphereParts.join(' • ')}`);
+    }
+  }
+
+  if (result.chapterText) {
+    const trimmedChapter = result.chapterText.trim();
+    const snippet = trimmedChapter.length > 120
+      ? `${trimmedChapter.slice(0, 117)}...`
+      : trimmedChapter;
+    lines.push(`📜 Narrative: "${snippet}"`);
+  }
+
+  lines.push(`🔗 Listen: ${shareUrl}`);
+
+  return lines.join('\n');
+};
+
+/**
+ * Copies text to clipboard with standard navigator API and fallback.
+ */
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+  logFunctionCall('copyToClipboard', { textLength: text.length });
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    if (typeof document !== 'undefined') {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    }
+    return false;
+  } catch (err) {
+    return false;
+  }
+};
+
+export type SongCulture = 'Chinese' | 'Japanese' | 'Korean' | 'Western';
+
+export interface CultureTheme {
+  name: SongCulture;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  cardBorder: string;
+  cardExpandedBorder: string;
+  cardBg: string;
+  cardExpandedBg: string;
+  accentText: string;
+  accentBg: string;
+  playBtnBg: string;
+  ring: string;
+  tagClass: string;
+  iconColor: string;
+}
+
+export const CULTURAL_THEMES: Record<SongCulture, CultureTheme> = {
+  Chinese: {
+    name: 'Chinese',
+    badgeBg: 'bg-blue-950/90',
+    badgeText: 'text-blue-300',
+    badgeBorder: 'border-blue-400/60',
+    cardBorder: 'border-blue-600/60',
+    cardExpandedBorder: 'border-blue-400/90',
+    cardBg: 'bg-slate-900/80 hover:bg-blue-950/30',
+    cardExpandedBg: 'bg-slate-950/95',
+    accentText: 'text-blue-300',
+    accentBg: 'bg-blue-500/20',
+    playBtnBg: 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-950/50',
+    ring: 'ring-blue-400/40',
+    tagClass: 'bg-blue-950/80 border-blue-700/60 text-blue-300',
+    iconColor: 'text-blue-400',
+  },
+  Japanese: {
+    name: 'Japanese',
+    badgeBg: 'bg-emerald-950/90',
+    badgeText: 'text-emerald-300',
+    badgeBorder: 'border-emerald-400/60',
+    cardBorder: 'border-emerald-600/60',
+    cardExpandedBorder: 'border-emerald-400/90',
+    cardBg: 'bg-slate-900/80 hover:bg-emerald-950/30',
+    cardExpandedBg: 'bg-slate-950/95',
+    accentText: 'text-emerald-300',
+    accentBg: 'bg-emerald-500/20',
+    playBtnBg: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/50',
+    ring: 'ring-emerald-400/40',
+    tagClass: 'bg-emerald-950/80 border-emerald-700/60 text-emerald-300',
+    iconColor: 'text-emerald-400',
+  },
+  Korean: {
+    name: 'Korean',
+    badgeBg: 'bg-rose-950/90',
+    badgeText: 'text-rose-300',
+    badgeBorder: 'border-rose-400/60',
+    cardBorder: 'border-rose-600/60',
+    cardExpandedBorder: 'border-rose-400/90',
+    cardBg: 'bg-slate-900/80 hover:bg-rose-950/30',
+    cardExpandedBg: 'bg-slate-950/95',
+    accentText: 'text-rose-300',
+    accentBg: 'bg-rose-500/20',
+    playBtnBg: 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/50',
+    ring: 'ring-rose-400/40',
+    tagClass: 'bg-rose-950/80 border-rose-700/60 text-rose-300',
+    iconColor: 'text-rose-400',
+  },
+  Western: {
+    name: 'Western',
+    badgeBg: 'bg-purple-950/90',
+    badgeText: 'text-purple-300',
+    badgeBorder: 'border-purple-400/60',
+    cardBorder: 'border-purple-600/60',
+    cardExpandedBorder: 'border-purple-400/90',
+    cardBg: 'bg-slate-900/80 hover:bg-purple-950/30',
+    cardExpandedBg: 'bg-slate-950/95',
+    accentText: 'text-purple-300',
+    accentBg: 'bg-purple-500/20',
+    playBtnBg: 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-950/50',
+    ring: 'ring-purple-400/40',
+    tagClass: 'bg-purple-950/80 border-purple-700/60 text-purple-300',
+    iconColor: 'text-purple-400',
+  },
+};
+
+export const getCultureForSong = (
+  soundscapeConfig?: { culture?: string; instrument?: string },
+  promptText?: string | null,
+  titleText?: string | null,
+  tags?: string[]
+): SongCulture => {
+  if (soundscapeConfig?.culture) {
+    const c = soundscapeConfig.culture;
+    if (c === 'Chinese' || c === 'Japanese' || c === 'Korean' || c === 'Western') {
+      return c as SongCulture;
+    }
+  }
+
+  const combined = [
+    soundscapeConfig?.culture || '',
+    soundscapeConfig?.instrument || '',
+    promptText || '',
+    titleText || '',
+    ...(tags || [])
+  ].join(' ').toLowerCase();
+
+  if (
+    combined.includes('japanese') ||
+    combined.includes('japan') ||
+    combined.includes('shamisen') ||
+    combined.includes('koto') ||
+    combined.includes('taiko') ||
+    combined.includes('shakuhachi') ||
+    combined.includes('shinobue') ||
+    combined.includes('biwa')
+  ) {
+    return 'Japanese';
+  }
+  if (
+    combined.includes('korean') ||
+    combined.includes('korea') ||
+    combined.includes('gayageum') ||
+    combined.includes('haegeum') ||
+    combined.includes('daegeum') ||
+    combined.includes('janggu') ||
+    combined.includes('taepyeongso') ||
+    combined.includes('ajaeng') ||
+    combined.includes('kkwaenggwari')
+  ) {
+    return 'Korean';
+  }
+  if (
+    combined.includes('western') ||
+    combined.includes('harp') ||
+    combined.includes('lute') ||
+    combined.includes('organ') ||
+    combined.includes('cello') ||
+    combined.includes('french horn')
+  ) {
+    return 'Western';
+  }
+
+  return 'Chinese';
+};
+
 
 
 

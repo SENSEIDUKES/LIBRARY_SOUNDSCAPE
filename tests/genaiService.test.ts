@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseModelOutput, generateSongTitle, generateCoverArt } from '../src/services/genaiService';
+import { parseModelOutput, generateSongTitle, generateCoverArt, generateLyriaAudio } from '../src/services/genaiService';
 
 // Mock the GoogleGenAI SDK module
 vi.mock('@google/genai', () => {
@@ -25,14 +25,55 @@ vi.mock('@google/genai', () => {
               ]
             };
           }
+          if (model?.includes('lyria')) {
+            return {
+              candidates: [
+                {
+                  content: {
+                    parts: [
+                      {
+                        inlineData: {
+                          mimeType: 'audio/wav',
+                          data: 'fakeaudiobase64'
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            };
+          }
           // Default text generation mock response
           return {
             text: 'Slaying Celestial Fiends'
           };
+        },
+        generateContentStream: async function* () {
+          yield {
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    {
+                      inlineData: {
+                        mimeType: 'audio/wav',
+                        data: 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA='
+                      }
+                    },
+                    {
+                      text: '[Verse 1] Sound of distant rivers'
+                    }
+                  ]
+                }
+              }
+            ]
+          };
         }
       };
     },
-    Modality: {},
+    Modality: {
+      AUDIO: 'AUDIO'
+    },
     Type: {}
   };
 });
@@ -80,7 +121,9 @@ describe('generateSongTitle', () => {
     delete process.env.GEMINI_API_KEY;
     try {
       const title = await generateSongTitle('epic fighting soundscape', 'Swords clash and thunder echoes');
-      expect(title).toBe('Lyria Composition');
+      expect(typeof title).toBe('string');
+      expect(title.length).toBeGreaterThan(0);
+      expect(title).not.toBe('Lyria Composition');
     } finally {
       process.env.API_KEY = originalApiKey;
     }
@@ -88,6 +131,13 @@ describe('generateSongTitle', () => {
 });
 
 describe('generateCoverArt', () => {
+  it('should return null as cover art generation is disabled for internal tool', async () => {
+    const art = await generateCoverArt('calm river at night', 'Gentle flowing waters and flutes', 'River Serenade');
+    expect(art).toBeNull();
+  });
+});
+
+describe('generateLyriaAudio', () => {
   beforeEach(() => {
     process.env.GEMINI_API_KEY = 'test_key';
   });
@@ -96,20 +146,19 @@ describe('generateCoverArt', () => {
     delete process.env.GEMINI_API_KEY;
   });
 
-  it('should generate image successfully and return base64 data url', async () => {
-    const art = await generateCoverArt('calm river at night', 'Gentle flowing waters and flutes', 'River Serenade');
-    expect(art).toBe('data:image/jpeg;base64,fakebase64string');
+  it('should stream audio and return base64 and lyrics', async () => {
+    const res = await generateLyriaAudio('Calm river at night with bamboo flutes', 'lyria-3-pro-preview');
+    expect(res.base64).toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+    expect(res.lyrics).toContain('Sound of distant rivers');
   });
 
-  it('should return null when API key is missing or generation fails', async () => {
-    const originalApiKey = process.env.API_KEY;
+  it('should fallback gracefully to acoustic synthesizer when API key is missing', async () => {
     delete process.env.API_KEY;
     delete process.env.GEMINI_API_KEY;
-    try {
-      const art = await generateCoverArt('calm river', 'flowing water', 'River');
-      expect(art).toBeNull();
-    } finally {
-      process.env.API_KEY = originalApiKey;
-    }
+    const res = await generateLyriaAudio('test prompt');
+    expect(res.audioUrl).toBeDefined();
+    expect(res.base64).toBeDefined();
+    expect(res.metadata).toContain('Acoustic Synthesizer: Active');
   });
 });
+

@@ -12,7 +12,7 @@
 import { SongResult } from '../../types';
 import { parseTimedLyrics } from './lyricsUtils';
 import { logFunctionCall } from './logger';
-import { sanitizeFilename, getAutoExportName } from './helpers';
+import { getAutoExportName } from './helpers';
 
 /**
  * Generates and downloads a video combining the song's audio, cover art, and optional lyrics.

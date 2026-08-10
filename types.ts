@@ -18,6 +18,7 @@ export interface SongResult {
   status: GenerationStatus;
   logs: string[];
   audioUrl: string | null;
+  audioBase64?: string; // added to persist base64 data
   coverImageUrl: string | null;
   title: string | null;
   lyrics: string;
@@ -27,11 +28,13 @@ export interface SongResult {
   modelId?: string;
   timestamp: Date;
   isExpanded: boolean;
+  isFavorite?: boolean;
   // Storage for retries
   originalPrompt: string;
   originalLyricsOption: LyricsOption;
   chapterText?: string;
   soundscapeConfig?: {
+    culture?: string;
     mood: string;
     instrument: string;
     pacing: string;
