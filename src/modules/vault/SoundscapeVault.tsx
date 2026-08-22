@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Heart, ListMusic, CheckSquare, Square, Loader2, DownloadCloud } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Sparkles, Heart, ListMusic, CheckSquare, Square, Loader2, DownloadCloud, Search, X, SlidersHorizontal, Tag } from 'lucide-react';
 import SongResultCard from '../../components/SongResultCard';
 import { SongResult } from '../../../types';
 import { createAndDownloadSoundscapesZip } from '../../utils/zipUtils';
+import { filterSoundscapes, extractVaultQuickTags } from '../../utils/vaultFilter';
 
 interface SoundscapeVaultProps {
   activeArchiveTab: 'my-music' | 'favorites';
@@ -19,6 +20,14 @@ interface SoundscapeVaultProps {
   onDelete?: (id: string) => void;
   onRerollTitle?: (id: string) => void;
 }
+
+const CULTURES: { id: string; label: string; activeClass: string }[] = [
+  { id: 'all', label: 'All Cultures', activeClass: 'bg-slate-700 text-white border-slate-500' },
+  { id: 'Chinese', label: 'Chinese', activeClass: 'bg-blue-600/30 text-blue-200 border-blue-400/70 shadow-sm shadow-blue-950' },
+  { id: 'Japanese', label: 'Japanese', activeClass: 'bg-emerald-600/30 text-emerald-200 border-emerald-400/70 shadow-sm shadow-emerald-950' },
+  { id: 'Korean', label: 'Korean', activeClass: 'bg-rose-600/30 text-rose-200 border-rose-400/70 shadow-sm shadow-rose-950' },
+  { id: 'Western', label: 'Western', activeClass: 'bg-purple-600/30 text-purple-200 border-purple-400/70 shadow-sm shadow-purple-950' },
+];
 
 export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
   activeArchiveTab,
@@ -40,6 +49,52 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
   const [selectedFavoriteIds, setSelectedFavoriteIds] = useState<Set<string>>(new Set());
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState<string>('');
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCulture, setSelectedCulture] = useState('all');
+
+  const currentTabPool = activeArchiveTab === 'my-music' ? genResults : favoriteResults;
+
+  // Filtered soundscapes based on active tab and search/filter inputs
+  const filteredMyMusic = useMemo(() => {
+    return filterSoundscapes(genResults, {
+      searchQuery,
+      selectedCulture,
+    });
+  }, [genResults, searchQuery, selectedCulture]);
+
+  const filteredFavorites = useMemo(() => {
+    return filterSoundscapes(favoriteResults, {
+      searchQuery,
+      selectedCulture,
+    });
+  }, [favoriteResults, searchQuery, selectedCulture]);
+
+  const activeFilteredList = activeArchiveTab === 'my-music' ? filteredMyMusic : filteredFavorites;
+
+  // Dynamic tags from current tab items for fast clicking
+  const quickTags = useMemo(() => {
+    return extractVaultQuickTags(currentTabPool);
+  }, [currentTabPool]);
+
+  const isFilterActive = searchQuery.trim().length > 0 || selectedCulture !== 'all';
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCulture('all');
+  };
+
+  const handleTagClick = (tag: string) => {
+    if (searchQuery.toLowerCase().includes(tag.toLowerCase())) {
+      // If already in query, remove or clear
+      const regex = new RegExp(`\\b${tag}\\b`, 'gi');
+      const updated = searchQuery.replace(regex, '').replace(/\s+/g, ' ').trim();
+      setSearchQuery(updated);
+    } else {
+      setSearchQuery((prev) => (prev.trim() ? `${prev.trim()} ${tag}` : tag));
+    }
+  };
 
   // Auto-clean selected IDs when favorites list changes
   useEffect(() => {
@@ -66,20 +121,31 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
   };
 
   const handleSelectAllFavorites = () => {
-    if (selectedFavoriteIds.size === favoriteResults.length) {
-      setSelectedFavoriteIds(new Set());
+    const visibleIds = filteredFavorites.map((f) => f.id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedFavoriteIds.has(id));
+
+    if (allVisibleSelected) {
+      setSelectedFavoriteIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.delete(id));
+        return next;
+      });
     } else {
-      setSelectedFavoriteIds(new Set(favoriteResults.map((f) => f.id)));
+      setSelectedFavoriteIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.add(id));
+        return next;
+      });
     }
   };
 
   const handleDownloadSelectedZip = async () => {
     if (isZipping) return;
 
-    // If none selected, default to all favorites
+    // Filter target songs: if specific items selected, download those within visible/all favorites, else download filtered favorites
     const targetSongs = selectedFavoriteIds.size > 0
       ? favoriteResults.filter((f) => selectedFavoriteIds.has(f.id))
-      : favoriteResults;
+      : filteredFavorites;
 
     if (targetSongs.length === 0) return;
 
@@ -102,11 +168,14 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
     }
   };
 
-  const allFavoritesSelected = favoriteResults.length > 0 && selectedFavoriteIds.size === favoriteResults.length;
+  const allVisibleFavoritesSelected =
+    filteredFavorites.length > 0 &&
+    filteredFavorites.every((f) => selectedFavoriteIds.has(f.id));
   const selectedCount = selectedFavoriteIds.size;
 
   return (
-    <div className="bg-[#0a0c1a]/95 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-5 backdrop-blur-2xl min-h-[500px] flex flex-col">
+    <div className="bg-[#0a0c1a]/95 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 backdrop-blur-2xl min-h-[500px] flex flex-col">
+      {/* Top Header & Navigation Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-700/80 pb-3.5">
         <h2 className="font-extrabold text-base sm:text-lg text-white tracking-wide flex items-center gap-2">
           <ListMusic className="w-4 h-4 text-cyan-400" />
@@ -148,6 +217,125 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
         </div>
       </div>
 
+      {/* Search and Quick Filters Bar (Rendered whenever there are soundscapes in either tab) */}
+      {(genResults.length > 0 || favoriteResults.length > 0) && (
+        <div className="space-y-2.5 bg-slate-950/70 p-3 sm:p-3.5 rounded-2xl border border-slate-800">
+          {/* Main Search Input */}
+          <div className="relative flex items-center">
+            <div className="absolute left-3 text-slate-400 pointer-events-none flex items-center">
+              <Search className="w-4 h-4 text-cyan-400" />
+            </div>
+            <input
+              id="vault-search-input"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by mood, instrument, culture, title, or tags..."
+              aria-label="Search soundscape tracks"
+              className="w-full pl-9 pr-8 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search input"
+                className="absolute right-2.5 p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer min-w-[24px] min-h-[24px] flex items-center justify-center"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Quick Culture Filter Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 pt-0.5">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0">
+              <SlidersHorizontal className="w-3 h-3 text-cyan-400" /> Culture:
+            </span>
+            {CULTURES.map((c) => {
+              const isSelected = selectedCulture === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCulture(c.id)}
+                  aria-label={`Filter by ${c.label}`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all border cursor-pointer min-h-[30px] ${
+                    isSelected
+                      ? c.activeClass
+                      : 'bg-slate-900/90 text-slate-300 hover:text-white border-slate-700/70 hover:border-slate-600'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick Tag Suggestion Chips (if available) */}
+          {(quickTags.instruments.length > 0 || quickTags.moods.length > 0) && (
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pt-1 border-t border-slate-800/80">
+              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0">
+                <Tag className="w-2.5 h-2.5 text-cyan-400" /> Quick Tags:
+              </span>
+              {quickTags.instruments.map((inst) => {
+                const isActive = searchQuery.toLowerCase().includes(inst.toLowerCase());
+                return (
+                  <button
+                    key={`tag-inst-${inst}`}
+                    type="button"
+                    onClick={() => handleTagClick(inst)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-mono transition-all border cursor-pointer shrink-0 ${
+                      isActive
+                        ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-bold'
+                        : 'bg-slate-900 text-slate-300 hover:text-cyan-200 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    🎵 {inst}
+                  </button>
+                );
+              })}
+              {quickTags.moods.map((m) => {
+                const isActive = searchQuery.toLowerCase().includes(m.toLowerCase());
+                return (
+                  <button
+                    key={`tag-mood-${m}`}
+                    type="button"
+                    onClick={() => handleTagClick(m)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-mono transition-all border cursor-pointer shrink-0 ${
+                      isActive
+                        ? 'bg-rose-500/30 text-rose-200 border-rose-400 font-bold'
+                        : 'bg-slate-900 text-slate-300 hover:text-rose-200 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    ✨ {m}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Active Filter Status & Reset button */}
+          {isFilterActive && (
+            <div className="flex items-center justify-between gap-2 pt-1 text-xs text-slate-300 border-t border-slate-800/80">
+              <div className="flex items-center gap-1.5 text-slate-300 font-mono text-[11px]">
+                <span>Showing</span>
+                <span className="font-bold text-cyan-300">{activeFilteredList.length}</span>
+                <span>of</span>
+                <span className="font-bold text-white">{currentTabPool.length}</span>
+                <span>tracks</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="flex items-center gap-1 text-[11px] font-bold text-rose-300 hover:text-rose-200 hover:underline cursor-pointer min-h-[24px]"
+              >
+                <X className="w-3 h-3" /> Reset Filters
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab: My Music */}
       {activeArchiveTab === 'my-music' && (
         <div
           ref={myMusicContainerRef}
@@ -165,8 +353,27 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 Extract chapter coordinates or use manual mode to evoke your first soundscape.
               </p>
             </div>
+          ) : filteredMyMusic.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center p-8 py-12 border border-dashed border-slate-700/80 rounded-3xl bg-black/20 flex-1 space-y-3">
+              <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                <Search className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-200">
+                No matching soundscapes found
+              </h4>
+              <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                No tracks match &ldquo;{searchQuery || selectedCulture}&rdquo;. Try another mood, instrument, or clear your filters.
+              </p>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 text-xs font-bold transition-all cursor-pointer min-h-[36px]"
+              >
+                Clear Search &amp; Filters
+              </button>
+            </div>
           ) : (
-            genResults.map((result) => {
+            filteredMyMusic.map((result) => {
               const isFav = favoriteResults.some((f) => f.id === result.id);
               return (
                 <SongResultCard
@@ -188,6 +395,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
         </div>
       )}
 
+      {/* Tab: Favorites */}
       {activeArchiveTab === 'favorites' && (
         <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-1 flex flex-col">
           {favoriteResults.length === 0 ? (
@@ -199,8 +407,27 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 No Favorites Yet
               </h4>
               <p className="text-xs text-gray-400 max-w-xs mt-2 leading-relaxed">
-                Click the heart icon on any soundscape in "My Music" to pin it to your persistent favorites tab.
+                Click the heart icon on any soundscape in &ldquo;My Music&rdquo; to pin it to your persistent favorites tab.
               </p>
+            </div>
+          ) : filteredFavorites.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center p-8 py-12 border border-dashed border-rose-900/40 rounded-3xl bg-black/20 flex-1 space-y-3">
+              <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                <Search className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-200">
+                No favorite soundscapes match
+              </h4>
+              <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                No favorite tracks match &ldquo;{searchQuery || selectedCulture}&rdquo;. Try another mood, instrument, or clear your filters.
+              </p>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 text-xs font-bold transition-all cursor-pointer min-h-[36px]"
+              >
+                Clear Search &amp; Filters
+              </button>
             </div>
           ) : (
             <>
@@ -211,22 +438,24 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                     onClick={handleSelectAllFavorites}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-extrabold border border-slate-700 transition-all cursor-pointer min-h-[36px]"
                   >
-                    {allFavoritesSelected ? (
+                    {allVisibleFavoritesSelected ? (
                       <CheckSquare className="w-4 h-4 text-rose-400" />
                     ) : (
                       <Square className="w-4 h-4 text-slate-400" />
                     )}
-                    {allFavoritesSelected ? 'Deselect All' : 'Select All'}
+                    {allVisibleFavoritesSelected ? 'Deselect All' : 'Select All'}
                   </button>
 
                   <span className="text-xs font-mono text-rose-300 font-bold px-2 py-1 bg-rose-950/60 rounded-lg border border-rose-900/50">
-                    {selectedCount > 0 ? `${selectedCount} of ${favoriteResults.length} selected` : `All (${favoriteResults.length})`}
+                    {selectedCount > 0
+                      ? `${selectedCount} of ${favoriteResults.length} selected`
+                      : `All visible (${filteredFavorites.length})`}
                   </span>
                 </div>
 
                 <button
                   onClick={handleDownloadSelectedZip}
-                  disabled={isZipping || favoriteResults.length === 0}
+                  disabled={isZipping || filteredFavorites.length === 0}
                   className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[36px] shadow-md ${
                     isZipping
                       ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
@@ -244,14 +473,14 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                       ? zipProgress || 'Creating ZIP...'
                       : selectedCount > 0
                       ? `Download ZIP (${selectedCount})`
-                      : `Download All as ZIP (${favoriteResults.length})`}
+                      : `Download All as ZIP (${filteredFavorites.length})`}
                   </span>
                 </button>
               </div>
 
-              {/* List of Favorites */}
+              {/* List of Filtered Favorites */}
               <div className="space-y-3 flex-1">
-                {favoriteResults.map((result) => {
+                {filteredFavorites.map((result) => {
                   const isSelected = selectedFavoriteIds.has(result.id);
                   return (
                     <SongResultCard
@@ -279,4 +508,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
     </div>
   );
 };
+
+export default SoundscapeVault;
+
 

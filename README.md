@@ -19,7 +19,8 @@ An East Asian traditional soundscape generator powered by Google Gemini and Lyri
 - **Real Web Audio BPM Detector**: Onset energy peak analysis for generated audio tracks and uploaded MP3/WAV files, plus an interactive tap tempo engine.
 - **Batch ZIP Export**: Select multiple favorite soundscapes in the Soundscape Vault and export them as a unified ZIP archive containing audio files, lyrics, and metadata summaries.
 - **Chapter Text Parser & Prompt Builder**: Extract Xianxia, Wuxia, and traditional East Asian narrative themes into high-fidelity music prompts.
-- **Soundscape Vault**: Local persistent storage with rehydrated audio playback and favorites management.
+- **Playback Progress Bar & Scrubbing**: Lightweight interactive audio scrubber bar integrated into both the persistent floating player dock and individual soundscape cards. Includes touch/mouse drag scrubbing, hover timestamp preview tooltips, quick skip backward/forward controls (`-5s` / `+5s`), buffer progress tracking, and cultural theme matching.
+- **Soundscape Vault & Continuous Audio Playback**: Local persistent storage with rehydrated audio playback, single-stream playback enforcement across DOM and Web Audio synthesizers, persistent playback controls in collapsed and expanded states, and unified favorites management.
 
 ## Run Locally
 

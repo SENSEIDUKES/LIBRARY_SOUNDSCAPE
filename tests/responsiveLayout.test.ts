@@ -24,4 +24,22 @@ describe('Mobile Viewport & Layout Helper Rules', () => {
     const formatted = totalTokens.toLocaleString();
     expect(formatted).toBe('12,500');
   });
+
+  it('should verify mobile bottom sheet modal class configurations (<640px vs >=640px)', () => {
+    const overlayClasses = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200';
+    const dialogClasses = 'relative w-full sm:max-w-xl bg-[#090a15] border-t sm:border border-white/15 rounded-t-[28px] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[90vh] text-gray-100 animate-bottom-sheet sm:animate-none';
+
+    // On mobile screens (< 640px)
+    expect(overlayClasses).toContain('items-end');
+    expect(overlayClasses).toContain('p-0');
+    expect(dialogClasses).toContain('rounded-t-[28px]');
+    expect(dialogClasses).toContain('animate-bottom-sheet');
+
+    // On desktop screens (>= 640px)
+    expect(overlayClasses).toContain('sm:items-center');
+    expect(overlayClasses).toContain('sm:p-4');
+    expect(dialogClasses).toContain('sm:rounded-3xl');
+    expect(dialogClasses).toContain('sm:animate-none');
+    expect(dialogClasses).toContain('sm:border');
+  });
 });

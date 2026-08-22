@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Cpu, Sliders, Zap, Sparkles, Key, RotateCcw, Check } from 'lucide-react';
 import { AVAILABLE_MUSIC_MODELS, MusicModelOption } from '../config';
+import { useBottomSheetGesture } from '../hooks/useBottomSheetGesture';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -31,18 +32,50 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onResetTokens,
   onOpenApiKeySettings,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const { dragStyle, dragHandleProps } = useBottomSheetGesture({
+    isOpen,
+    onClose,
+  });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-dialog-title"
+    >
       <div
-        className="relative w-full max-w-xl bg-[#090a15] border border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-gray-100"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-dialog-title"
+        onClick={(e) => e.stopPropagation()}
+        style={dragStyle}
+        className="relative w-full sm:max-w-xl bg-[#090a15] border-t sm:border border-white/15 rounded-t-[28px] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[90vh] text-gray-100 animate-bottom-sheet sm:animate-none touch-pan-y"
       >
+        {/* Mobile Drag Handle */}
+        <div
+          {...dragHandleProps}
+          className="sm:hidden flex flex-col items-center justify-center pt-3 pb-1.5 bg-slate-900/80 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+        >
+          <div className="w-12 h-1.5 bg-slate-500/80 hover:bg-slate-400 rounded-full transition-colors" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/80 bg-slate-900/60">
+        <div
+          {...dragHandleProps}
+          className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-700/80 bg-slate-900/60 touch-none select-none sm:touch-auto"
+        >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl bg-cyan-500/25 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0 shadow-sm">
               <Sliders className="w-4 h-4" />
@@ -58,7 +91,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-600"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-600 min-w-[32px] min-h-[32px]"
             aria-label="Close settings"
           >
             <X className="w-4 h-4" />

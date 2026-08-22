@@ -157,3 +157,20 @@ body {
   animation-play-state: paused;
 }
 
+/* Mobile Bottom Sheet Slide Up Animation (< 640px) */
+@keyframes bottomSheetSlideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+.animate-bottom-sheet {
+  animation: bottomSheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+

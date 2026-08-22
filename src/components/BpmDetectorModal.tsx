@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Disc, Upload, X, RefreshCw, Radio, Zap, Music } from 'lucide-react';
 import { detectBpmFromAudio, detectKeyFromAudio } from '../utils/audioUtils';
 import { SongResult } from '../../types';
+import { useBottomSheetGesture } from '../hooks/useBottomSheetGesture';
 
 interface BpmDetectorModalProps {
   isOpen: boolean;
@@ -41,6 +42,22 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
       setSelectedTrackId(activeTrackId);
     }
   }, [activeTrackId]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const { dragStyle, dragHandleProps } = useBottomSheetGesture({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -129,16 +146,37 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-[#0d0f22] border border-slate-700/80 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-white">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bpm-detector-dialog-title"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={dragStyle}
+        className="relative w-full sm:max-w-lg bg-[#0d0f22] border-t sm:border border-slate-700/80 rounded-t-[28px] sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-white max-h-[88vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar animate-bottom-sheet sm:animate-none touch-pan-y"
+      >
+        {/* Mobile Drag Handle */}
+        <div
+          {...dragHandleProps}
+          className="sm:hidden flex flex-col items-center justify-center -mt-2 pb-1.5 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+        >
+          <div className="w-12 h-1.5 bg-slate-500/80 hover:bg-slate-400 rounded-full transition-colors" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div
+          {...dragHandleProps}
+          className="flex items-center justify-between border-b border-slate-800 pb-3.5 sm:pb-4 touch-none select-none sm:touch-auto"
+        >
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
               <Activity className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold tracking-tight">Real BPM Detector</h3>
+              <h3 id="bpm-detector-dialog-title" className="text-base font-extrabold tracking-tight">Real BPM Detector</h3>
               <p className="text-xs text-slate-300 font-medium">Web Audio peak energy analysis & tap tempo</p>
             </div>
           </div>
