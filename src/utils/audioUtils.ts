@@ -442,42 +442,6 @@ export const detectKeyFromAudioBuffer = (buffer: AudioBuffer): { key: string; co
 };
 
 /**
- * Formats a duration in seconds into a standard mm:ss or m:ss time string.
- * @param seconds Duration in seconds (e.g. 75.4)
- * @returns Formatted time string (e.g. "1:15")
- */
-export const formatAudioTime = (seconds: number): string => {
-  if (!seconds || isNaN(seconds) || !isFinite(seconds) || seconds < 0) {
-    return '0:00';
-  }
-  const totalSeconds = Math.floor(seconds);
-  const minutes = Math.floor(totalSeconds / 60);
-  const remainingSeconds = totalSeconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
-
-/**
- * Seeks an HTML audio element to a specific target time or by a delta offset in seconds.
- * Clamps within [0, duration].
- */
-export const seekAudio = (
-  audio: HTMLAudioElement | null | undefined,
-  targetTimeOrDelta: number,
-  isDelta: boolean = false
-): number => {
-  if (!audio) return 0;
-  const duration = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
-  const target = isDelta ? audio.currentTime + targetTimeOrDelta : targetTimeOrDelta;
-  const clampedTime = Math.max(0, duration > 0 ? Math.min(target, duration) : Math.max(0, target));
-  try {
-    audio.currentTime = clampedTime;
-  } catch (e) {
-    console.warn('Failed to seek audio element:', e);
-  }
-  return clampedTime;
-};
-
-/**
  * Convenience function to fetch, decode, and detect real musical key from audio source.
  */
 export const detectKeyFromAudio = async (

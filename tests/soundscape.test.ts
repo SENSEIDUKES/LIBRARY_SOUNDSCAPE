@@ -106,29 +106,4 @@ Genre: Xianxia, Guqin, Ambient
     expect(tracks.length).toBe(1);
     expect(tracks[0].id).toBe('track-2');
   });
-
-  it('should correctly resolve audio source from audioUrl or fallback audioBase64', () => {
-    const trackWithUrl = {
-      id: 'track-url',
-      audioUrl: 'blob:https://example.com/audio-123',
-      audioBase64: 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
-    };
-    const trackWithBase64Only = {
-      id: 'track-b64',
-      audioUrl: null,
-      audioBase64: 'UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=',
-    };
-
-    const hasAudio1 = Boolean(trackWithUrl.audioUrl || trackWithUrl.audioBase64);
-    const hasAudio2 = Boolean(trackWithBase64Only.audioUrl || trackWithBase64Only.audioBase64);
-    const emptyTrack: { audioUrl: string | null; audioBase64: string | null } = {
-      audioUrl: null,
-      audioBase64: null,
-    };
-    const hasAudioEmpty = Boolean(emptyTrack.audioUrl || emptyTrack.audioBase64);
-
-    expect(hasAudio1).toBe(true);
-    expect(hasAudio2).toBe(true);
-    expect(hasAudioEmpty).toBe(false);
-  });
 });

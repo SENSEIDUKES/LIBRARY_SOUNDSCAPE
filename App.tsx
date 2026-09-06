@@ -3,7 +3,7 @@ import { Sparkles, Wand2, ListMusic } from 'lucide-react';
 import { LyricsOption, SongResult } from './types';
 import { EXAMPLE_SONGS } from './constants';
 import { CONFIG } from './src/config';
-import { getAutoExportName, getRandomItem, getCultureForSong } from './src/utils/helpers';
+import { getAutoExportName, getRandomItem } from './src/utils/helpers';
 import { handleDownloadVideo } from './src/utils/videoUtils';
 
 import { Header } from './src/components/Header';
@@ -435,17 +435,6 @@ const App: React.FC = () => {
           }
           coverUrl={playingPreset ? playingPreset.coverUrl : (playingResult?.coverImageUrl || undefined)}
           isPlaying={true}
-          audioId={playingResult ? `audio-${playingResult.id}` : undefined}
-          presetDuration={playingPreset ? 4 : undefined}
-          culture={
-            playingResult
-              ? getCultureForSong(
-                  playingResult.soundscapeConfig,
-                  playingResult.fullPrompt || playingResult.originalPrompt,
-                  playingResult.title
-                )
-              : 'Chinese'
-          }
           onTogglePlay={() => {
             if (playingPreset) {
               togglePresetPlaying(playingPreset.id);
@@ -455,12 +444,7 @@ const App: React.FC = () => {
               ) as HTMLAudioElement;
               if (audio) {
                 if (audio.paused) {
-                  const p = audio.play();
-                  if (p !== undefined) {
-                    p.catch((e) => {
-                      if (e.name !== 'AbortError') console.warn('Play interrupted:', e);
-                    });
-                  }
+                  audio.play().catch(e => console.warn('Play interrupted:', e));
                 } else {
                   audio.pause();
                 }

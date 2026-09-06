@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Play, Pause, Download, Video, ChevronRight, Share2, Check, Heart, Trash2, Activity, Dices } from 'lucide-react';
 import { SongResult } from '../../types';
 import { extractMetadata, formatShareText, copyToClipboard, getCultureForSong, CULTURAL_THEMES } from '../utils/helpers';
-import { detectBpmFromAudio, detectKeyFromAudio, createAudioUrlFromBase64, seekAudio } from '../utils/audioUtils';
-import { AudioScrubber } from './AudioScrubber';
+import { detectBpmFromAudio, detectKeyFromAudio } from '../utils/audioUtils';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 interface SongResultCardProps {
@@ -37,72 +36,16 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
   isSelected = false,
   onToggleSelect,
 }) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playPromiseRef = useRef<Promise<void> | null>(null);
   const [copied, setCopied] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [realBpm, setRealBpm] = useState<number | null>(null);
   const [realKey, setRealKey] = useState<string | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
-  const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
-  const [bufferedPercent, setBufferedPercent] = useState<number>(0);
-
-  const effectiveAudioUrl = result.audioUrl || (result.audioBase64 ? createAudioUrlFromBase64(result.audioBase64, 'audio/wav') : null);
-
-  // Sync playback time updates from audio element
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateTimes = () => {
-      setCurrentTime(audio.currentTime);
-      if (isFinite(audio.duration) && audio.duration > 0) {
-        setDuration(audio.duration);
-      }
-      if (audio.buffered.length > 0 && isFinite(audio.duration) && audio.duration > 0) {
-        try {
-          const end = audio.buffered.end(audio.buffered.length - 1);
-          setBufferedPercent((end / audio.duration) * 100);
-        } catch (_) {}
-      }
-    };
-
-    updateTimes();
-
-    audio.addEventListener('timeupdate', updateTimes);
-    audio.addEventListener('loadedmetadata', updateTimes);
-    audio.addEventListener('durationchange', updateTimes);
-    audio.addEventListener('progress', updateTimes);
-    audio.addEventListener('ended', updateTimes);
-
-    return () => {
-      audio.removeEventListener('timeupdate', updateTimes);
-      audio.removeEventListener('loadedmetadata', updateTimes);
-      audio.removeEventListener('durationchange', updateTimes);
-      audio.removeEventListener('progress', updateTimes);
-      audio.removeEventListener('ended', updateTimes);
-    };
-  }, [effectiveAudioUrl]);
-
-  const handleSeek = (targetTime: number) => {
-    if (audioRef.current) {
-      const newTime = seekAudio(audioRef.current, targetTime);
-      setCurrentTime(newTime);
-    }
-  };
-
-  const handleSeekDelta = (delta: number) => {
-    if (audioRef.current) {
-      const newTime = seekAudio(audioRef.current, delta, true);
-      setCurrentTime(newTime);
-    }
-  };
 
   useEffect(() => {
-    if ((effectiveAudioUrl || result.audioBase64) && (!realBpm || !realKey) && !isDetecting) {
+    if ((result.audioUrl || result.audioBase64) && (!realBpm || !realKey) && !isDetecting) {
       setIsDetecting(true);
-      const audioSource = result.audioBase64 || effectiveAudioUrl || '';
+      const audioSource = result.audioBase64 || result.audioUrl || '';
       Promise.all([
         detectBpmFromAudio(audioSource),
         detectKeyFromAudio(audioSource),
@@ -114,8 +57,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
         .catch(() => {})
         .finally(() => setIsDetecting(false));
     }
-  }, [effectiveAudioUrl, result.audioBase64]);
-
+  }, [result.audioUrl, result.audioBase64]);
   const isExpanded = result.isExpanded;
   const isGenerating = result.status === 'generating';
   const isFailed = result.status === 'error';
@@ -152,34 +94,12 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
 
   const handlePlayButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isGenerating || isFailed) return;
+    if (isGenerating) return;
 
-    const audio = audioRef.current || (document.getElementById(`audio-${result.id}`) as HTMLAudioElement);
-    if (!audio) return;
-
-    if (audio.paused) {
-      const promise = audio.play();
-      if (promise !== undefined) {
-        playPromiseRef.current = promise;
-        promise
-          .catch((err) => {
-            if (err.name !== 'AbortError') {
-              console.warn('Playback interrupted:', err);
-            }
-          })
-          .finally(() => {
-            if (playPromiseRef.current === promise) {
-              playPromiseRef.current = null;
-            }
-          });
-      }
-    } else {
-      if (playPromiseRef.current) {
-        playPromiseRef.current
-          .then(() => {
-            audio.pause();
-          })
-          .catch(() => {});
+    const audio = document.getElementById(`audio-${result.id}`) as HTMLAudioElement;
+    if (audio) {
+      if (audio.paused) {
+        audio.play().catch(e => console.warn('Play interrupted:', e));
       } else {
         audio.pause();
       }
@@ -292,7 +212,6 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
         {/* Controls */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
-            type="button"
             onClick={handleFavoriteClick}
             className={`w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               result.isFavorite
@@ -310,7 +229,6 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
           </button>
 
           <button
-            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onDownloadMP3(result);
@@ -323,7 +241,6 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
           </button>
 
           <button
-            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setShowDeleteModal(true);
@@ -336,22 +253,19 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
           </button>
 
           <button
-            type="button"
             onClick={handlePlayButtonClick}
-            disabled={(!effectiveAudioUrl && !isGenerating) || isFailed}
+            disabled={!result.audioUrl && !isGenerating}
             className={`w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               isPlaying
                 ? `${theme.playBtnBg}`
                 : 'bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600'
             }`}
             aria-label={isPlaying ? 'Pause soundscape' : 'Play soundscape'}
-            title={isPlaying ? 'Pause soundscape' : 'Play soundscape'}
           >
             {isPlaying ? <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />}
           </button>
 
           <button
-            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onToggleExpand(result.id);
@@ -370,58 +284,20 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
       </div>
 
 
-      {/* Collapsed active mini scrubber when audio is playing or has progress */}
-      {!isExpanded && effectiveAudioUrl && (isPlaying || currentTime > 0) && (
-        <div className="mt-3 pt-2.5 border-t border-slate-800/80 animate-in fade-in duration-150">
-          <AudioScrubber
-            id={`mini-scrubber-${result.id}`}
-            currentTime={currentTime}
-            duration={duration}
-            bufferedPercent={bufferedPercent}
-            onSeek={handleSeek}
-            onSeekDelta={handleSeekDelta}
-            culture={culture}
-            showTimeLabels={true}
-            showSkipButtons={false}
-            compact={true}
-          />
-        </div>
-      )}
-
-      {/* Persistent single audio element for both collapsed and expanded states */}
-      {effectiveAudioUrl && (
-        <audio
-          ref={audioRef}
-          id={`audio-${result.id}`}
-          src={effectiveAudioUrl}
-          preload="metadata"
-          onPlay={() => onPlayStateChange(result.id)}
-          onPause={() => onPlayStateChange(null)}
-          onEnded={() => onPlayStateChange(null)}
-          className="hidden"
-        />
-      )}
-
       {/* Expandable details */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-slate-700/80 space-y-4 animate-in fade-in duration-200">
-          {effectiveAudioUrl && (
+        <div className="mt-4 pt-4 border-t border-slate-700/80 space-y-4 animate-in fade-in duration-200">
+          {result.audioUrl && (
             <div className="space-y-3">
-              {/* Full Featured In-Card Audio Scrubber */}
-              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 shadow-inner">
-                <AudioScrubber
-                  id={`card-scrubber-${result.id}`}
-                  currentTime={currentTime}
-                  duration={duration}
-                  bufferedPercent={bufferedPercent}
-                  onSeek={handleSeek}
-                  onSeekDelta={handleSeekDelta}
-                  culture={culture}
-                  showTimeLabels={true}
-                  showSkipButtons={true}
-                  skipSeconds={5}
-                />
-              </div>
+              <audio
+                id={`audio-${result.id}`}
+                src={result.audioUrl}
+                onPlay={() => onPlayStateChange(result.id)}
+                onPause={() => onPlayStateChange(null)}
+                onEnded={() => onPlayStateChange(null)}
+                controls
+                className="w-full h-10 rounded-xl"
+              />
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <button
