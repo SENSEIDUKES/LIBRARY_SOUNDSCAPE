@@ -89,7 +89,11 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBpmDetectorOpen, setIsBpmDetectorOpen] = useState(false);
   const [selectedMusicModel, setSelectedMusicModel] = useState<string>(() => {
-    return localStorage.getItem('sen_music_model') || CONFIG.MODEL_ID_FULL;
+    const saved = localStorage.getItem('sen_music_model');
+    if (!saved || saved === 'lyria-3-pro-preview') {
+      return CONFIG.MODEL_ID_FULL;
+    }
+    return saved;
   });
   const [temperature, setTemperature] = useState<number>(() => {
     const saved = localStorage.getItem('sen_temperature');
@@ -196,10 +200,15 @@ const App: React.FC = () => {
   };
 
   const handleGenerateClick = () => {
+    const baseManualPrompt = prompt.trim() || 'Atmospheric soundscape resonant with the visual scene snapshot';
     let finalPrompt = activeInputTab === 'novel'
       ? `[Chapter Soundscape] Mood: ${soundscapeConfig.mood}. Style: ${culture}. Primary Instrument: ${soundscapeConfig.instrument}. Pacing: ${soundscapeConfig.pacing}. Main Texture: ${soundscapeConfig.mainTexture}. Env Noise: ${soundscapeConfig.environmentalTexture}. Atmosphere: ${soundscapeConfig.sceneAtmosphere}. Ending: ${soundscapeConfig.endingDirection}. Vocals: ${soundscapeConfig.vocals}.`
-      : `[Manual Soundscape] ${prompt} | Style: ${culture}, Pacing: ${soundscapeConfig.pacing}, Intensity: ${soundscapeConfig.intensity ?? 0.5}${soundscapeConfig.instrument ? `, Instrument: ${soundscapeConfig.instrument}` : ''}`;
+      : `[Manual Soundscape] ${baseManualPrompt} | Style: ${culture}, Pacing: ${soundscapeConfig.pacing}, Intensity: ${soundscapeConfig.intensity ?? 0.5}${soundscapeConfig.instrument ? `, Instrument: ${soundscapeConfig.instrument}` : ''}`;
       
+    if (selectedImages.length > 0) {
+      finalPrompt += ` | Multimodal Scene Visual Anchor: Synchronized with uploaded scene visual imagery (${selectedImages.length} image reference).`;
+    }
+
     if (activeInputTab === 'simple' && lyricsOption === 'Custom' && customLyrics.trim()) {
       finalPrompt += `\n\nLyrics to include:\n"${customLyrics.trim()}"`;
     }
@@ -263,7 +272,7 @@ const App: React.FC = () => {
     favoriteResults.find((r) => r.id === isResultPlaying);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#05060e] text-gray-100 font-sans pb-24 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-[#05060e] text-gray-100 font-sans pb-28 sm:pb-24 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] overflow-x-clip">
       <Header
         totalTokens={totalInputTokens + totalOutputTokens}
         estimatedCost={estimatedCost}
@@ -271,9 +280,9 @@ const App: React.FC = () => {
         onOpenBpmDetector={() => setIsBpmDetectorOpen(true)}
       />
 
-      <section className="py-6 sm:py-8 px-3 sm:px-6 text-center bg-radial-gradient relative overflow-hidden select-none">
-        <div className="mb-4 px-3 sm:px-4 py-1.5 bg-cyan-950/70 border border-cyan-400/50 rounded-full w-full max-w-xl mx-auto flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-md shadow-md overflow-hidden">
-          <span className="text-[11px] sm:text-xs font-extrabold tracking-widest text-cyan-300 uppercase shrink-0 flex items-center gap-1">
+      <section className="py-5 sm:py-8 px-3 sm:px-6 text-center bg-radial-gradient relative overflow-hidden select-none">
+        <div className="mb-3 sm:mb-4 px-3 sm:px-4 py-1.5 bg-cyan-950/70 border border-cyan-400/50 rounded-full w-full max-w-xl mx-auto flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-md shadow-md overflow-hidden">
+          <span className="text-[10px] sm:text-xs font-extrabold tracking-widest text-cyan-300 uppercase shrink-0 flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> DAO INSIGHT
           </span>
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 shrink-0" />
@@ -283,7 +292,7 @@ const App: React.FC = () => {
         <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white uppercase font-displaySc drop-shadow-md px-2">
           SEN Soundscapes
         </h1>
-        <p className="text-[10px] xs:text-xs sm:text-sm text-cyan-300 mt-1.5 sm:mt-2 font-bold tracking-widest uppercase px-2 leading-relaxed">
+        <p className="text-[10px] xs:text-xs sm:text-sm text-cyan-300 mt-1 sm:mt-2 font-bold tracking-widest uppercase px-2 leading-relaxed">
           Expanded Novels • Celestial Immersive Audio Companion
         </p>
       </section>
@@ -305,9 +314,9 @@ const App: React.FC = () => {
         />
       </div>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
         <div
-          className={`lg:col-span-6 xl:col-span-5 space-y-6 ${
+          className={`lg:col-span-6 xl:col-span-5 space-y-5 sm:space-y-6 ${
             mobileMainTab === 'library' ? 'hidden lg:block' : 'block'
           }`}
         >
@@ -320,18 +329,18 @@ const App: React.FC = () => {
             />
           </div>
 
-          <div className="bg-[#0a0c1a]/95 border border-slate-700/80 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 backdrop-blur-2xl">
-            <div className="flex items-center justify-between border-b border-slate-700/80 pb-3.5">
-              <h2 className="font-extrabold text-base sm:text-lg text-white tracking-wide flex items-center gap-2">
-                <Wand2 className="w-4 h-4 text-cyan-400" />
-                Generate Soundscape
+          <div className="bg-[#0a0c1a]/95 border border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 sm:space-y-5 backdrop-blur-2xl">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-700/80 pb-3">
+              <h2 className="font-extrabold text-sm sm:text-base md:text-lg text-white tracking-wide flex items-center gap-1.5 sm:gap-2 whitespace-nowrap min-w-0">
+                <Wand2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span className="truncate">Generate Soundscape</span>
               </h2>
 
-              <div className="flex bg-slate-950 p-1 rounded-full border border-slate-700">
+              <div className="flex bg-slate-950 p-1 rounded-full border border-slate-700 shrink-0">
                 <button
                   onClick={() => setActiveInputTab('novel')}
                   aria-label="Switch to Chapter Parser mode"
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer min-h-[32px] ${
+                  className={`px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer min-h-[30px] sm:min-h-[32px] ${
                     activeInputTab === 'novel'
                       ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-sm'
                       : 'text-slate-300 hover:text-white'
@@ -342,7 +351,7 @@ const App: React.FC = () => {
                 <button
                   onClick={() => setActiveInputTab('simple')}
                   aria-label="Switch to Manual input mode"
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer min-h-[32px] ${
+                  className={`px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer min-h-[30px] sm:min-h-[32px] ${
                     activeInputTab === 'simple'
                       ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-sm'
                       : 'text-slate-300 hover:text-white'
@@ -363,6 +372,8 @@ const App: React.FC = () => {
                 setChapterText={setChapterText}
                 culture={culture}
                 setCulture={handleCultureChange}
+                selectedImages={selectedImages}
+                setSelectedImages={setSelectedImages}
               />
             )}
 
@@ -379,13 +390,22 @@ const App: React.FC = () => {
                 setVoiceGender={setVoiceGender}
                 selectedImages={selectedImages}
                 setSelectedImages={setSelectedImages}
+                culture={culture}
+                onApplySceneCoordinates={(coords) => {
+                  setSoundscapeConfig((prev) => ({
+                    ...prev,
+                    mood: coords.mood || prev.mood,
+                    instrument: coords.instrument || prev.instrument,
+                    environmentalTexture: coords.environment || prev.environmentalTexture,
+                  }));
+                }}
               />
             )}
 
             <button
               onClick={handleGenerateClick}
               disabled={
-                (!prompt.trim() && selectedImages.length === 0) ||
+                (!prompt.trim() && selectedImages.length === 0 && (activeInputTab === 'simple' || !chapterText.trim())) ||
                 CONFIG.IS_MAINTENANCE_MODE
               }
               aria-label="Generate Soundscape audio track"

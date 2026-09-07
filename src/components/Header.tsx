@@ -15,10 +15,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenBpmDetector,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#070814]/90 backdrop-blur-2xl border-b border-slate-800 px-4 sm:px-6 h-16 flex items-center justify-between select-none shadow-md">
+    <header className="sticky top-0 z-40 w-full bg-[#070814]/90 backdrop-blur-2xl border-b border-slate-800 px-3 sm:px-6 pt-[env(safe-area-inset-top,0px)] min-h-[4rem] flex items-center justify-between select-none shadow-md">
       {/* Brand & Logo */}
-      <div className="flex items-center gap-3">
-        <div className="relative w-9 h-9 rounded-2xl overflow-hidden border border-slate-600 shadow-md transition-transform duration-300 hover:scale-105 shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-2xl overflow-hidden border border-slate-600 shadow-md transition-transform duration-300 hover:scale-105 shrink-0">
           <img
             src="https://pub-e482c2dbbb984c3c87ecdd8ae3a92183.r2.dev/LIBRARY/images/CELESTIAL%20LIBRARY%20ICON.jpg"
             alt="SEN Logo"
@@ -26,20 +26,20 @@ export const Header: React.FC<HeaderProps> = ({
             referrerPolicy="no-referrer"
           />
         </div>
-        <div className="flex flex-col">
-          <span className="font-sans text-sm font-extrabold tracking-tight text-white leading-none">
+        <div className="flex flex-col min-w-0">
+          <span className="font-sans text-xs sm:text-sm font-extrabold tracking-tight text-white leading-tight truncate">
             SEN Soundscapes
           </span>
-          <span className="text-[11px] text-cyan-300 font-bold tracking-wide mt-0.5">
+          <span className="text-[10px] sm:text-[11px] text-cyan-300 font-bold tracking-wide leading-tight truncate">
             Light Novel Companion
           </span>
         </div>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Token Pill */}
-        <div className="hidden xs:flex items-center gap-2 px-3 py-1.5 bg-slate-900/90 rounded-full border border-slate-700 text-xs font-sans shadow-sm">
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-900/90 rounded-full border border-slate-700 text-xs font-sans shadow-sm">
           <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
           <span className="text-slate-200 font-medium">
             <span className="text-white font-extrabold">{totalTokens}</span> tok
@@ -52,10 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
         {onOpenBpmDetector && (
           <button
             onClick={onOpenBpmDetector}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-xs font-bold text-cyan-200 transition-all active:scale-95 cursor-pointer min-h-[36px] shadow-sm"
+            className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-xs font-bold text-cyan-200 transition-all active:scale-95 cursor-pointer min-h-[36px] shadow-sm"
             aria-label="Open Real BPM Detector"
           >
-            <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse shrink-0" />
             <span className="hidden sm:inline">BPM Detector</span>
           </button>
         )}
@@ -63,10 +63,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Settings button */}
         <button
           onClick={onOpenSettings}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-white transition-all active:scale-95 cursor-pointer min-h-[36px] shadow-sm"
+          className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-white transition-all active:scale-95 cursor-pointer min-h-[36px] shadow-sm"
           aria-label="Open Settings"
         >
-          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+          <Sliders className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
           <span className="hidden sm:inline">Settings</span>
         </button>
       </div>

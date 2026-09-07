@@ -176,17 +176,17 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
   return (
     <div className="bg-[#0a0c1a]/95 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 backdrop-blur-2xl min-h-[500px] flex flex-col">
       {/* Top Header & Navigation Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-700/80 pb-3.5">
-        <h2 className="font-extrabold text-base sm:text-lg text-white tracking-wide flex items-center gap-2">
-          <ListMusic className="w-4 h-4 text-cyan-400" />
-          Soundscape Vault
+      <div className="flex flex-row items-center justify-between gap-2 border-b border-slate-700/80 pb-3">
+        <h2 className="font-extrabold text-sm sm:text-base md:text-lg text-white tracking-wide flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <ListMusic className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span className="truncate">Soundscape Vault</span>
         </h2>
 
-        <div className="flex bg-slate-950 p-1 rounded-full border border-slate-700 max-w-full overflow-x-auto custom-scrollbar">
+        <div className="flex bg-slate-950 p-1 rounded-full border border-slate-700 shrink-0">
           <button
             onClick={() => setActiveArchiveTab('my-music')}
             aria-label="View my generated soundscapes"
-            className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap min-h-[32px] ${
+            className={`px-3 py-1 sm:py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap min-h-[30px] sm:min-h-[32px] ${
               activeArchiveTab === 'my-music'
                 ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-sm'
                 : 'text-slate-300 hover:text-white'
@@ -200,7 +200,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
           <button
             onClick={() => setActiveArchiveTab('favorites')}
             aria-label="View favorite soundscapes"
-            className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap min-h-[32px] ${
+            className={`px-3 py-1 sm:py-1.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap min-h-[30px] sm:min-h-[32px] ${
               activeArchiveTab === 'favorites'
                 ? 'bg-rose-500/30 text-rose-200 border border-rose-400/60 shadow-sm'
                 : 'text-slate-300 hover:text-white'
@@ -432,8 +432,8 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
           ) : (
             <>
               {/* Batch Actions Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-950/80 border border-rose-900/40 rounded-2xl">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 sm:p-3 bg-slate-950/80 border border-rose-900/40 rounded-2xl">
+                <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleSelectAllFavorites}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-extrabold border border-slate-700 transition-all cursor-pointer min-h-[36px]"
@@ -446,17 +446,17 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                     {allVisibleFavoritesSelected ? 'Deselect All' : 'Select All'}
                   </button>
 
-                  <span className="text-xs font-mono text-rose-300 font-bold px-2 py-1 bg-rose-950/60 rounded-lg border border-rose-900/50">
+                  <span className="text-[11px] sm:text-xs font-mono text-rose-300 font-bold px-2 py-1 bg-rose-950/60 rounded-lg border border-rose-900/50 truncate">
                     {selectedCount > 0
-                      ? `${selectedCount} of ${favoriteResults.length} selected`
-                      : `All visible (${filteredFavorites.length})`}
+                      ? `${selectedCount}/${favoriteResults.length} selected`
+                      : `All (${filteredFavorites.length})`}
                   </span>
                 </div>
 
                 <button
                   onClick={handleDownloadSelectedZip}
                   disabled={isZipping || filteredFavorites.length === 0}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[36px] shadow-md ${
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[36px] shadow-md ${
                     isZipping
                       ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
                       : 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 shadow-rose-950/60 active:scale-95'
@@ -464,11 +464,11 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                   title="Download selected soundscapes as a single ZIP archive"
                 >
                   {isZipping ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-rose-300" />
+                    <Loader2 className="w-4 h-4 animate-spin text-rose-300 shrink-0" />
                   ) : (
-                    <DownloadCloud className="w-4 h-4 text-rose-100" />
+                    <DownloadCloud className="w-4 h-4 text-rose-100 shrink-0" />
                   )}
-                  <span>
+                  <span className="truncate">
                     {isZipping
                       ? zipProgress || 'Creating ZIP...'
                       : selectedCount > 0

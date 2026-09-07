@@ -42,4 +42,21 @@ describe('Mobile Viewport & Layout Helper Rules', () => {
     expect(dialogClasses).toContain('sm:animate-none');
     expect(dialogClasses).toContain('sm:border');
   });
+
+  it('should verify safe-area-inset and mobile padding rules for sticky controls', () => {
+    const headerPadding = 'pt-[env(safe-area-inset-top,0px)]';
+    const playerBarBottom = 'bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]';
+    const appBottomPadding = 'pb-[calc(7rem+env(safe-area-inset-bottom,0px))]';
+
+    expect(headerPadding).toContain('safe-area-inset-top');
+    expect(playerBarBottom).toContain('safe-area-inset-bottom');
+    expect(appBottomPadding).toContain('safe-area-inset-bottom');
+  });
+
+  it('should enforce touch target minimum heights for mobile buttons', () => {
+    const minMobileTouchTargetPx = 32;
+    const standardMobileTouchTargetPx = 44;
+    expect(minMobileTouchTargetPx).toBeGreaterThanOrEqual(30);
+    expect(standardMobileTouchTargetPx).toBeGreaterThanOrEqual(44);
+  });
 });

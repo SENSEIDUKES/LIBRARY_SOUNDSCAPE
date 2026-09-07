@@ -9,7 +9,8 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",

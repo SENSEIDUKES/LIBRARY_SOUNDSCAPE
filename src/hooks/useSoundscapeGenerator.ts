@@ -99,7 +99,7 @@ export function useSoundscapeGenerator() {
       status: 'generating',
       logs: [],
       audioUrl: null,
-      coverImageUrl: null,
+      coverImageUrl: selectedImages.length > 0 ? selectedImages[0].previewUrl : null,
       title: null,
       lyrics: '',
       metadata: '',
@@ -125,7 +125,7 @@ export function useSoundscapeGenerator() {
 
     try {
       if (selectedImages.length > 0) {
-        appendLog(resultId, `Incorporating ${selectedImages.length} visual reference image(s)...`);
+        appendLog(resultId, `Incorporating ${selectedImages.length} visual scene reference image(s) for multimodal synthesis...`);
       }
 
       // Build comprehensive prompt for Lyria
@@ -151,7 +151,7 @@ export function useSoundscapeGenerator() {
         instrument: soundscapeConfig?.instrument
       }));
 
-      const lyriaResult = await generateLyriaAudio(composedMusicPrompt, selectedMusicModel);
+      const lyriaResult = await generateLyriaAudio(composedMusicPrompt, selectedMusicModel, 30, selectedImages);
 
       setGen((prev) => ({
         ...prev,
@@ -161,12 +161,12 @@ export function useSoundscapeGenerator() {
                 ...r,
                 status: 'completed',
                 title: songTitle || generateRandomTitle({ culture, mood: soundscapeConfig?.mood }),
-                coverImageUrl: undefined,
+                coverImageUrl: selectedImages.length > 0 ? selectedImages[0].previewUrl : undefined,
                 audioUrl: lyriaResult.audioUrl,
                 audioBase64: lyriaResult.base64,
                 lyrics: lyriaResult.lyrics || r.lyrics,
                 fullPrompt: composedMusicPrompt,
-                metadata: lyriaResult.metadata || `Model: ${selectedMusicModel}\nCulture: ${culture}\nInstrument: ${soundscapeConfig?.instrument || 'Traditional'}\nMood: ${soundscapeConfig?.mood || 'Ambient'}`,
+                metadata: lyriaResult.metadata || `Model: ${selectedMusicModel}\nCulture: ${culture}\nInstrument: ${soundscapeConfig?.instrument || 'Traditional'}\nMood: ${soundscapeConfig?.mood || 'Ambient'}\nMultimodal Visuals: ${selectedImages.length > 0 ? 'Active' : 'None'}`,
               }
             : r
         ),

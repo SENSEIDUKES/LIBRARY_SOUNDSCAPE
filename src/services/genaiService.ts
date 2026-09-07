@@ -10,15 +10,29 @@ import { logFunctionCall, logGenAiCall } from '../utils/logger';
 import { createAudioUrlFromBase64, createSyntheticSoundscape } from '../utils/audioUtils';
 import { generateRandomTitle } from '../utils/titleUtils';
 
+export interface VisualSceneAnalysis {
+  promptSuggestion: string;
+  mood: string;
+  instrument: string;
+  environment: string;
+  sceneTitle: string;
+}
+
 /**
  * Generates music audio using Google Lyria models via server API route or direct SDK fallback.
  */
 export const generateLyriaAudio = async (
   prompt: string,
   modelId: string = CONFIG.MODEL_ID_FULL,
-  durationSeconds: number = 30
+  durationSeconds: number = 30,
+  images?: Array<{ data: string; mimeType: string }>
 ): Promise<{ audioUrl: string; base64: string; lyrics?: string; metadata?: string }> => {
-  logFunctionCall('generateLyriaAudio', { promptLength: prompt.length, modelId, durationSeconds });
+  logFunctionCall('generateLyriaAudio', {
+    promptLength: prompt.length,
+    modelId,
+    durationSeconds,
+    imageCount: images?.length || 0,
+  });
   const modelToUse = modelId || CONFIG.MODEL_ID_FULL;
 
   // 1. Try server API endpoint first
@@ -26,7 +40,7 @@ export const generateLyriaAudio = async (
     const apiRes = await fetch("/api/gemini/lyria", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, modelId: modelToUse }),
+      body: JSON.stringify({ prompt, modelId: modelToUse, images }),
     });
 
     if (apiRes.ok) {
@@ -58,9 +72,26 @@ export const generateLyriaAudio = async (
         }
       });
 
+      let contents: any = prompt;
+      if (Array.isArray(images) && images.length > 0) {
+        const parts: any[] = [];
+        if (prompt) parts.push({ text: prompt });
+        for (const img of images) {
+          if (img && img.data) {
+            parts.push({
+              inlineData: {
+                data: img.data,
+                mimeType: img.mimeType || "image/jpeg",
+              },
+            });
+          }
+        }
+        contents = parts.length > 0 ? parts : prompt;
+      }
+
       const responseStream = await ai.models.generateContentStream({
         model: modelToUse,
-        contents: prompt,
+        contents,
         config: {
           responseModalities: [Modality.AUDIO],
         }
@@ -116,6 +147,76 @@ export const generateLyriaAudio = async (
     base64: synth.base64,
     lyrics: "♫ Instrumental soundscape motif ♫",
     metadata: `Model: ${modelToUse}\nInstrument: ${inst}\nAcoustic Synthesizer: Active`
+  };
+};
+
+/**
+ * Analyzes a visual scene snapshot using Gemini to extract soundscape coordinates for Lyria 3.5.
+ */
+export const analyzeVisualScene = async (
+  image: { data: string; mimeType?: string },
+  culture: string = 'Chinese'
+): Promise<VisualSceneAnalysis> => {
+  logFunctionCall('analyzeVisualScene', { culture, mimeType: image.mimeType });
+
+  // 1. Try server endpoint first
+  try {
+    const apiRes = await fetch("/api/gemini/analyze-scene", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, culture }),
+    });
+
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      if (data.success && data.analysis) {
+        return data.analysis;
+      }
+    }
+  } catch (err) {
+    console.warn("Server API route /api/gemini/analyze-scene failed, using fallback:", err);
+  }
+
+  // 2. Direct SDK fallback
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  if (apiKey) {
+    try {
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
+      });
+      const prompt = `Analyze this visual scene to produce soundscape coordinates for Google's Lyria 3.5 music generation model.
+Culture: ${culture}
+Return JSON with:
+{
+  "promptSuggestion": "Evocative prompt describing instrumentation and ambiance (max 25 words)",
+  "mood": "e.g. Mysterious / Ethereal / Peaceful / Epic / Sorrowful",
+  "instrument": "e.g. Guqin / Xiao / Guzheng / Erhu / Pipa",
+  "environment": "e.g. Mountain wind and echoing water",
+  "sceneTitle": "2 to 3 word poetic title"
+}`;
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: [
+          { text: prompt },
+          { inlineData: { data: image.data, mimeType: image.mimeType || 'image/jpeg' } },
+        ],
+        config: { responseMimeType: 'application/json' },
+      });
+      const parsed = JSON.parse(response.text || '{}');
+      if (parsed.promptSuggestion) return parsed;
+    } catch (sdkErr) {
+      console.warn("Direct SDK analyzeVisualScene failed:", sdkErr);
+    }
+  }
+
+  // 3. Fallback heuristic response
+  return {
+    promptSuggestion: `An ethereal, deeply atmospheric ${culture} soundscape with resonant traditional strings and echoing mountain air.`,
+    mood: 'Mysterious',
+    instrument: culture === 'Chinese' ? 'Guqin / Xiao' : 'Traditional Strings',
+    environment: 'High mountain wind and echoing drops',
+    sceneTitle: 'Celestial Peak',
   };
 };
 

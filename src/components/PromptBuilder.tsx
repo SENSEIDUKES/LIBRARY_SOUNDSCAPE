@@ -219,7 +219,7 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
         {/* Textarea excerpt */}
         <div className="relative w-full group">
           <textarea
-            className="w-full h-28 bg-slate-950/90 border border-slate-700/90 rounded-2xl p-3.5 pr-28 text-xs text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 resize-none custom-scrollbar outline-none font-medium shadow-inner"
+            className="w-full h-28 bg-slate-950/90 border border-slate-700/90 rounded-2xl p-3.5 pr-20 xs:pr-24 sm:pr-28 text-xs text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 resize-none custom-scrollbar outline-none font-medium shadow-inner"
             placeholder="Paste light novel excerpt or chapter scene description here to extract soundscape coordinates..."
             value={chapterText}
             onChange={(e) => setChapterText(e.target.value)}
@@ -228,16 +228,17 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
             type="button"
             onClick={handleRefine}
             disabled={isRefining || !chapterText.trim()}
-            className="absolute top-2.5 right-2.5 z-10 px-2.5 py-1 bg-slate-900/80 hover:bg-slate-900/95 border border-cyan-400/50 hover:border-cyan-300 text-cyan-300 hover:text-white rounded-full backdrop-blur-md transition-all shadow-md shadow-cyan-950/60 disabled:opacity-40 cursor-pointer flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider"
+            className="absolute top-2.5 right-2.5 z-10 px-2 sm:px-2.5 py-1 bg-slate-900/80 hover:bg-slate-900/95 border border-cyan-400/50 hover:border-cyan-300 text-cyan-300 hover:text-white rounded-full backdrop-blur-md transition-all shadow-md shadow-cyan-950/60 disabled:opacity-40 cursor-pointer flex items-center gap-1 sm:gap-1.5 text-[10px] font-extrabold uppercase tracking-wider"
             aria-label="Refine prompt for Lyria with AI"
           >
             {isRefining ? (
-              <Loader2 className="w-3 h-3 animate-spin text-cyan-400" />
+              <Loader2 className="w-3 h-3 animate-spin text-cyan-400 shrink-0" />
             ) : (
-              <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse" />
+              <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse shrink-0" />
             )}
             <span className="bg-gradient-to-r from-cyan-300 to-indigo-300 bg-clip-text text-transparent font-extrabold">
-              {isRefining ? "Refining..." : "AI Enhance"}
+              <span className="hidden xs:inline">{isRefining ? "Refining..." : "AI Enhance"}</span>
+              <span className="xs:hidden">{isRefining ? "..." : "Enhance"}</span>
             </span>
           </button>
         </div>

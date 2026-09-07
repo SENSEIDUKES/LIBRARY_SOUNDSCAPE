@@ -74,24 +74,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Header */}
         <div
           {...dragHandleProps}
-          className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-700/80 bg-slate-900/60 touch-none select-none sm:touch-auto"
+          className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700/80 bg-slate-900/60 touch-none select-none sm:touch-auto gap-2"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-cyan-500/25 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0 shadow-sm">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-2xl bg-cyan-500/25 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0 shadow-sm">
               <Sliders className="w-4 h-4" />
             </div>
-            <div>
-              <h3 id="settings-dialog-title" className="text-base font-extrabold text-white tracking-tight">
+            <div className="min-w-0 flex-1">
+              <h3 id="settings-dialog-title" className="text-sm sm:text-base font-extrabold text-white tracking-tight truncate">
                 Settings & Model Routing
               </h3>
-              <p className="text-xs text-slate-300 font-medium">
+              <p className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">
                 Route Gemini audio synthesis models & tune acoustic parameters
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-600 min-w-[32px] min-h-[32px]"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-600 min-w-[32px] min-h-[32px] shrink-0"
             aria-label="Close settings"
           >
             <X className="w-4 h-4" />
@@ -99,14 +99,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+        <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 overflow-y-auto custom-scrollbar flex-1">
           {/* Section 1: Music Generation Models */}
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-xs font-extrabold uppercase tracking-widest text-cyan-300 flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5" /> Music Model Routing
+            <div className="flex items-center justify-between mb-3 gap-2">
+              <label className="text-xs font-extrabold uppercase tracking-widest text-cyan-300 flex items-center gap-1.5 truncate">
+                <Cpu className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Music Model Routing</span>
               </label>
-              <span className="text-xs text-slate-300 font-mono font-semibold">
+              <span className="text-xs text-slate-300 font-mono font-semibold shrink-0">
                 Active: <span className="text-white font-extrabold">{selectedModel}</span>
               </span>
             </div>
@@ -235,14 +235,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </section>
 
           {/* Section 3: Token Usage & Cost */}
-          <section className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <section className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/90 border border-slate-700 flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <Sparkles className="w-5 h-5 text-cyan-400 shrink-0" />
-              <div>
-                <div className="text-xs font-extrabold text-white">
+              <div className="min-w-0">
+                <div className="text-xs font-extrabold text-white truncate">
                   {totalTokens.toLocaleString()} tokens consumed
                 </div>
-                <div className="text-xs text-slate-300 font-medium">
+                <div className="text-xs text-slate-300 font-medium truncate">
                   Est. Session Cost: <span className="text-cyan-300 font-extrabold">${estimatedCost}</span>
                 </div>
               </div>
@@ -250,26 +250,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <button
               onClick={onResetTokens}
               aria-label="Reset session token counters"
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-600 min-h-[36px]"
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-slate-600 min-h-[36px] shrink-0"
               title="Reset session token counters"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-cyan-300" /> Reset
+              <RotateCcw className="w-3.5 h-3.5 text-cyan-300 shrink-0" /> Reset
             </button>
           </section>
 
           {/* Section 4: API Keys */}
-          <section className="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/40 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
+          <section className="p-3.5 sm:p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/40 flex flex-col xs:flex-row xs:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3 min-w-0">
               <Key className="w-5 h-5 text-cyan-400 shrink-0" />
-              <div>
-                <div className="text-xs font-extrabold text-white">Gemini API Environment</div>
-                <div className="text-xs text-slate-300 font-medium">Configure API keys in AI Studio settings</div>
+              <div className="min-w-0">
+                <div className="text-xs font-extrabold text-white truncate">Gemini API Environment</div>
+                <div className="text-xs text-slate-300 font-medium truncate">Configure API keys in AI Studio settings</div>
               </div>
             </div>
             <button
               onClick={onOpenApiKeySettings}
               aria-label="Configure Gemini API keys"
-              className="px-3.5 py-2 rounded-xl bg-cyan-500/30 hover:bg-cyan-500/40 text-cyan-200 border border-cyan-400/50 text-xs font-extrabold transition-all cursor-pointer min-h-[36px]"
+              className="px-3.5 py-2 rounded-xl bg-cyan-500/30 hover:bg-cyan-500/40 text-cyan-200 border border-cyan-400/50 text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer min-h-[36px] shrink-0"
             >
               Configure Keys
             </button>
@@ -277,11 +277,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-slate-700/80 bg-slate-900/60 flex items-center justify-end">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-700/80 bg-slate-900/60 flex items-center justify-end">
           <button
             onClick={onClose}
             aria-label="Save settings and close dialog"
-            className="px-6 py-2.5 rounded-full bg-cyan-500/30 hover:bg-cyan-500/40 text-cyan-200 border border-cyan-400/60 text-xs font-extrabold transition-all cursor-pointer shadow-md min-h-[44px]"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-cyan-500/30 hover:bg-cyan-500/40 text-cyan-200 border border-cyan-400/60 text-xs font-extrabold transition-all cursor-pointer shadow-md min-h-[44px]"
           >
             Done
           </button>

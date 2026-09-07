@@ -156,7 +156,7 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
       <div
         onClick={(e) => e.stopPropagation()}
         style={dragStyle}
-        className="relative w-full sm:max-w-lg bg-[#0d0f22] border-t sm:border border-slate-700/80 rounded-t-[28px] sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-white max-h-[88vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar animate-bottom-sheet sm:animate-none touch-pan-y"
+        className="relative w-full sm:max-w-lg bg-[#0d0f22] border-t sm:border border-slate-700/80 rounded-t-[28px] sm:rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 sm:space-y-5 text-white max-h-[88vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar animate-bottom-sheet sm:animate-none touch-pan-y"
       >
         {/* Mobile Drag Handle */}
         <div
@@ -169,21 +169,21 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
         {/* Header */}
         <div
           {...dragHandleProps}
-          className="flex items-center justify-between border-b border-slate-800 pb-3.5 sm:pb-4 touch-none select-none sm:touch-auto"
+          className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 touch-none select-none sm:touch-auto gap-2"
         >
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
-              <Activity className="w-5 h-5 animate-pulse" />
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
             </div>
-            <div>
-              <h3 id="bpm-detector-dialog-title" className="text-base font-extrabold tracking-tight">Real BPM Detector</h3>
-              <p className="text-xs text-slate-300 font-medium">Web Audio peak energy analysis & tap tempo</p>
+            <div className="min-w-0 flex-1">
+              <h3 id="bpm-detector-dialog-title" className="text-sm sm:text-base font-extrabold tracking-tight truncate">Real BPM Detector</h3>
+              <p className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">Web Audio peak energy analysis & tap tempo</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close BPM detector modal"
-            className="p-2 text-slate-300 hover:text-white rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-600 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
+            className="p-2 text-slate-300 hover:text-white rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-600 cursor-pointer min-w-[32px] min-h-[32px] shrink-0 flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </button>
@@ -224,7 +224,7 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
                   Select Generated Soundscape
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col xs:flex-row gap-2">
                   <select
                     value={selectedTrackId}
                     onChange={(e) => {
@@ -232,7 +232,7 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
                       setUploadedFileName(null);
                       setAnalysisResult(null);
                     }}
-                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400 cursor-pointer min-h-[42px]"
+                    className="w-full flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400 cursor-pointer min-h-[42px]"
                   >
                     {tracks.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -243,7 +243,7 @@ export const BpmDetectorModal: React.FC<BpmDetectorModalProps> = ({
                   <button
                     onClick={() => selectedTrack && handleAnalyzeTrack(selectedTrack)}
                     disabled={analyzing || !selectedTrack}
-                    className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-extrabold text-xs rounded-xl shadow cursor-pointer transition-all flex items-center gap-1.5 min-h-[42px]"
+                    className="w-full xs:w-auto px-4 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-extrabold text-xs rounded-xl shadow cursor-pointer transition-all flex items-center justify-center gap-1.5 min-h-[42px] shrink-0"
                   >
                     {analyzing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                     Analyze

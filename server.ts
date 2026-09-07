@@ -33,12 +33,31 @@ async function startServer() {
   // Lyria Music Generation Route
   app.post("/api/gemini/lyria", async (req, res) => {
     try {
-      const { prompt, modelId = "lyria-3-pro-preview" } = req.body;
+      const { prompt, modelId = "lyria-3.5-pro-preview", images } = req.body;
       const ai = getGenAI();
+
+      let contents: any = prompt;
+      if (Array.isArray(images) && images.length > 0) {
+        const parts: any[] = [];
+        if (prompt) {
+          parts.push({ text: prompt });
+        }
+        for (const img of images) {
+          if (img && img.data) {
+            parts.push({
+              inlineData: {
+                data: img.data,
+                mimeType: img.mimeType || "image/jpeg",
+              },
+            });
+          }
+        }
+        contents = parts.length > 0 ? parts : prompt;
+      }
 
       const responseStream = await ai.models.generateContentStream({
         model: modelId,
-        contents: prompt,
+        contents,
         config: {
           responseModalities: [Modality.AUDIO],
         },
@@ -72,7 +91,7 @@ async function startServer() {
       if (!audioBase64) {
         const directResponse = await ai.models.generateContent({
           model: modelId,
-          contents: prompt,
+          contents,
           config: {
             responseModalities: [Modality.AUDIO],
           },
@@ -99,6 +118,50 @@ async function startServer() {
     } catch (err: any) {
       console.error("Error in /api/gemini/lyria:", err);
       res.status(500).json({ success: false, error: err?.message || "Failed to generate Lyria audio." });
+    }
+  });
+
+  // Visual Scene Analysis Route (for Lyria 3.5 Multimodal Music Directing)
+  app.post("/api/gemini/analyze-scene", async (req, res) => {
+    try {
+      const { image, culture = "Chinese" } = req.body;
+      const ai = getGenAI();
+
+      const prompt = `You are an expert music director and sound designer. Analyze this visual scene snapshot to generate soundscape coordinates for Google's Lyria 3.5 music generation model.
+Culture/Tradition: ${culture}
+
+Analyze the visual elements (such as mountain ranges, mist, water, weather, lighting, architecture, flora, and atmosphere) and return a strict JSON object with:
+{
+  "promptSuggestion": "A concise, evocative prompt describing the instrumentation, tempo, and acoustic ambiance (max 25 words)",
+  "mood": "e.g. Mysterious / Ethereal / Peaceful / Epic / Sorrowful",
+  "instrument": "e.g. Guqin / Xiao Flute / Guzheng / Erhu / Pipa",
+  "environment": "e.g. Echoing mountain wind and gentle pine rustle",
+  "sceneTitle": "2 to 3 word evocative poetic title"
+}`;
+
+      const contents: any = [
+        { text: prompt },
+        {
+          inlineData: {
+            data: image.data,
+            mimeType: image.mimeType || "image/jpeg",
+          },
+        },
+      ];
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.6-flash",
+        contents,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
+
+      const parsed = JSON.parse(response.text || "{}");
+      res.json({ success: true, analysis: parsed });
+    } catch (err: any) {
+      console.error("Error in /api/gemini/analyze-scene:", err);
+      res.status(500).json({ success: false, error: err?.message || "Failed to analyze visual scene" });
     }
   });
 

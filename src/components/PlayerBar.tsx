@@ -19,8 +19,8 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
   onClose,
 }) => {
   return (
-    <div className="fixed bottom-3 left-3 right-3 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in slide-in-from-bottom-5 duration-300">
-      <div className="flex items-center justify-between bg-[#0e1022]/98 backdrop-blur-2xl border border-cyan-400/50 rounded-3xl p-2.5 sm:p-3.5 shadow-2xl shadow-cyan-950/60 ring-1 ring-white/15">
+    <div className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in slide-in-from-bottom-5 duration-300">
+      <div className="flex items-center justify-between bg-[#0e1022]/98 backdrop-blur-2xl border border-cyan-400/50 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-2xl shadow-cyan-950/60 ring-1 ring-white/15">
         {/* Artwork & Info */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
           <div className="relative w-11 h-11 rounded-2xl overflow-hidden shrink-0 border border-slate-600 bg-black/60">

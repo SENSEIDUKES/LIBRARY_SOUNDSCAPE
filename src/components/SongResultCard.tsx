@@ -109,7 +109,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
   return (
     <div
       id={`soundscape-${result.id}`}
-      className={`rounded-3xl p-4 transition-all border ${
+      className={`rounded-2xl sm:rounded-3xl p-3 sm:p-4 transition-all border ${
         isExpanded
           ? `${theme.cardExpandedBorder} ${theme.cardExpandedBg} shadow-2xl ring-1 ${theme.ring}`
           : `${theme.cardBorder} ${theme.cardBg} hover:border-slate-500`
@@ -138,7 +138,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
         )}
 
         {/* Artwork Cover */}
-        <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shrink-0 border border-slate-600 bg-black/60 shadow-sm">
+        <div className="relative w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shrink-0 border border-slate-600 bg-black/60 shadow-sm">
           {result.coverImageUrl ? (
             <img
               src={result.coverImageUrl}
@@ -154,8 +154,8 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <h4 className="font-extrabold text-xs sm:text-base text-white truncate">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap min-w-0">
+            <h4 className="font-extrabold text-xs sm:text-base text-white truncate max-w-[120px] xs:max-w-[170px] sm:max-w-none">
               {isFailed
                 ? 'Generation Diverged'
                 : result.title || (isGenerating ? 'Synthesizing...' : 'Celestial Soundscape')}
@@ -167,25 +167,25 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
                   e.stopPropagation();
                   onRerollTitle(result.id);
                 }}
-                className="p-1 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 transition-colors border border-slate-700/60 cursor-pointer min-w-[22px] min-h-[22px] flex items-center justify-center"
+                className="p-1 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 transition-colors border border-slate-700/60 cursor-pointer min-w-[20px] min-h-[20px] flex items-center justify-center"
                 title="Randomize / reroll song name"
                 aria-label="Randomize / reroll song name"
               >
                 <Dices className="w-3 h-3" />
               </button>
             )}
-            <span className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[9px] font-mono font-bold rounded-md shrink-0 uppercase tracking-tight shadow-xs border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}>
+            <span className={`px-1.5 py-0.5 text-[8px] sm:text-[9px] font-mono font-bold rounded-md shrink-0 uppercase tracking-tight shadow-xs border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}>
               {culture}
             </span>
             {result.modelId && (
-              <span className="px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[9px] font-mono font-bold bg-slate-800/90 text-slate-300 border border-slate-600 rounded-md shrink-0 uppercase tracking-tight shadow-xs">
+              <span className="hidden xs:inline-block px-1.5 py-0.5 text-[8px] sm:text-[9px] font-mono font-bold bg-slate-800/90 text-slate-300 border border-slate-600 rounded-md shrink-0 uppercase tracking-tight shadow-xs">
                 {result.modelId.replace('-preview', '')}
               </span>
             )}
           </div>
-          <div className={`text-[11px] sm:text-xs font-mono font-semibold tracking-wide mt-0.5 truncate flex items-center gap-1.5 flex-wrap ${theme.accentText}`}>
+          <div className={`text-[10px] sm:text-xs font-mono font-semibold tracking-wide mt-0.5 truncate flex items-center gap-1 sm:gap-1.5 flex-wrap ${theme.accentText}`}>
             {realKey ? (
-              <span className="inline-flex items-center gap-1 bg-amber-950/80 px-1.5 py-0.5 rounded-md border border-amber-400/40 text-[10px] text-amber-300 font-bold">
+              <span className="inline-flex items-center gap-1 bg-amber-950/80 px-1.5 py-0.5 rounded-md border border-amber-400/40 text-[9px] sm:text-[10px] text-amber-300 font-bold">
                 🎹 {realKey}
               </span>
             ) : extMeta.key ? (
@@ -195,7 +195,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
             {(realKey || extMeta.key) && (realBpm || extMeta.tempo || isDetecting) && <span>•</span>}
 
             {realBpm ? (
-              <span className="inline-flex items-center gap-1 bg-cyan-950/80 px-1.5 py-0.5 rounded-md border border-cyan-400/40 text-[10px] text-cyan-300 font-bold">
+              <span className="inline-flex items-center gap-1 bg-cyan-950/80 px-1.5 py-0.5 rounded-md border border-cyan-400/40 text-[9px] sm:text-[10px] text-cyan-300 font-bold">
                 <Activity className="w-3 h-3 text-cyan-400 animate-pulse" />
                 {realBpm} BPM
               </span>
@@ -204,7 +204,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
             ) : isDetecting ? (
               <span className="text-slate-400 italic text-[10px]">Analyzing audio...</span>
             ) : result.soundscapeConfig?.pacing ? (
-              <span className="text-slate-400 font-sans text-[11px] font-semibold">{result.soundscapeConfig.pacing}</span>
+              <span className="text-slate-400 font-sans text-[10px] sm:text-[11px] font-semibold">{result.soundscapeConfig.pacing}</span>
             ) : null}
           </div>
         </div>
@@ -213,7 +213,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             onClick={handleFavoriteClick}
-            className={`w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               result.isFavorite
                 ? 'bg-rose-500/30 text-rose-300 border border-rose-400/60 shadow-sm shadow-rose-950/40'
                 : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-rose-400 border border-slate-600'
@@ -233,7 +233,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
               e.stopPropagation();
               onDownloadMP3(result);
             }}
-            className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600"
+            className="hidden xs:flex w-8 h-8 sm:w-10 sm:h-10 rounded-full items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600"
             title="Download MP3 audio"
             aria-label="Download MP3 audio"
           >
@@ -245,7 +245,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
               e.stopPropagation();
               setShowDeleteModal(true);
             }}
-            className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-rose-950/80 text-slate-300 hover:text-rose-400 border border-slate-600 hover:border-rose-500/50"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-rose-950/80 text-slate-300 hover:text-rose-400 border border-slate-600 hover:border-rose-500/50"
             title="Delete soundscape"
             aria-label="Delete soundscape"
           >
@@ -255,7 +255,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
           <button
             onClick={handlePlayButtonClick}
             disabled={!result.audioUrl && !isGenerating}
-            className={`w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               isPlaying
                 ? `${theme.playBtnBg}`
                 : 'bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600'
@@ -270,7 +270,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
               e.stopPropagation();
               onToggleExpand(result.id);
             }}
-            className="p-1 sm:p-2 text-slate-300 hover:text-white transition-transform cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
+            className="p-1 sm:p-2 text-slate-300 hover:text-white transition-transform cursor-pointer min-w-[28px] sm:min-w-[32px] min-h-[28px] sm:min-h-[32px] flex items-center justify-center"
             aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
             title={isExpanded ? 'Collapse details' : 'Expand details'}
           >

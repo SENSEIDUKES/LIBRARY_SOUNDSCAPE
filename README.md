@@ -8,7 +8,7 @@ An East Asian traditional soundscape generator powered by Google Gemini and Lyri
 
 ## Features
 
-- **Full-Stack Gemini & Lyria Engine**: Secure Express backend server proxying `@google/genai` API requests (`/api/gemini/lyria`, `/api/gemini/refine-prompt`, `/api/gemini/generate-title`), preventing client-side key exposure and providing reliable model streaming (`lyria-3-pro-preview`, `lyria-3-clip-preview`, `gemini-3.6-flash`).
+- **Full-Stack Gemini & Lyria Engine**: Secure Express backend server proxying `@google/genai` API requests (`/api/gemini/lyria`, `/api/gemini/refine-prompt`, `/api/gemini/generate-title`), preventing client-side key exposure and providing reliable model streaming (`lyria-3.5-pro-preview`, `lyria-3.5`, `lyria-3-clip-preview`, `gemini-3.6-flash`).
 - **Dynamic Song Title Randomization**: Contextual, culturally-tuned song title generation engine ensuring unique 2-3 word titles and preventing duplicate outputs. Includes a one-click title reroll button (`🎲`) on every track card.
 - **Shortened Download Filenames**: Clean, compact download string formatting (`Title_X7B.mp3`) replacing long messy filenames for single MP3 downloads and batch ZIP exports.
 - **Cultural Song Differentiation**: Automatic visual theme distinction with distinct color palettes:

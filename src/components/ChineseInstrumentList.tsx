@@ -490,11 +490,11 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
   return (
     <div className="w-full bg-[#0a0c1a]/95 border border-slate-700/80 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-2xl backdrop-blur-2xl space-y-2.5">
       {/* Culture Selector Bar on Instruments Panel */}
-      <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
-        <span className="text-[10px] sm:text-xs font-extrabold text-slate-300 uppercase tracking-wider shrink-0">
-          Culture Motif:
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
+        <span className="text-[10px] sm:text-xs font-extrabold text-slate-300 uppercase tracking-wider shrink-0 flex items-center gap-1">
+          Culture Motif
         </span>
-        <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar no-scrollbar py-0.5">
+        <div className="grid grid-cols-4 sm:flex items-center gap-1 w-full xs:w-auto">
           {CULTURE_OPTIONS.map((c) => {
             const isSelected = culture === c.id;
             return (
@@ -502,15 +502,15 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
                 key={c.id}
                 type="button"
                 onClick={() => onCultureChange?.(c.id)}
-                className={`px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap shrink-0 border ${
+                className={`px-1.5 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap text-center border flex items-center justify-center ${
                   isSelected
                     ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400/80 shadow-xs shadow-cyan-950/50 ring-1 ring-cyan-400/40'
                     : 'bg-slate-900/80 text-slate-400 border-slate-700/70 hover:bg-slate-800 hover:text-slate-200'
                 }`}
                 aria-label={`Switch culture to ${c.name}`}
               >
-                {c.shortName}
-                <span className="ml-1 text-[8px] opacity-75 font-normal hidden xs:inline">
+                <span>{c.shortName}</span>
+                <span className="ml-1 text-[8px] opacity-75 font-normal hidden md:inline">
                   ({c.tag})
                 </span>
               </button>
@@ -525,8 +525,8 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
             <Music className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="text-xs sm:text-sm font-extrabold text-white leading-none truncate">
+            <div className="flex items-center gap-1.5">
+              <h4 className="text-xs sm:text-sm font-extrabold text-white leading-tight truncate">
                 {info.title}
               </h4>
               <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-400/40 shrink-0 hidden md:inline-block">
@@ -539,35 +539,27 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
           </div>
         </div>
 
-        {/* Selected Instrument Pill & Toggle */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {activeInst && (
-            <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-950/90 border border-cyan-400/50 text-cyan-200 text-[10px] sm:text-xs font-bold shrink-0 shadow-sm cursor-pointer hover:bg-cyan-900/80 transition-all max-w-[110px] xs:max-w-[140px] sm:max-w-[180px]"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              title={`Active: ${activeInst.name} (${activeInst.chineseName})`}
-            >
-              <span className="text-cyan-300 font-extrabold text-xs shrink-0">
-                {activeInst.iconSymbol}
-              </span>
-              <span className="truncate">{activeInst.name}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0 hidden xs:inline-block" />
-            </div>
-          )}
-
+        {/* Unified Instrument Selector Trigger Button */}
+        {activeInst && (
           <button
+            type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 sm:p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white transition-all active:scale-95 cursor-pointer min-w-[36px] min-h-[36px] shrink-0 flex items-center justify-center border border-slate-700"
-            title={isCollapsed ? 'Expand Selector' : 'Collapse Selector'}
-            aria-label={isCollapsed ? 'Expand instrument list' : 'Collapse instrument list'}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-950/90 hover:bg-cyan-900/90 border border-cyan-400/60 text-cyan-200 text-xs font-bold shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[36px]"
+            title={`Current motif: ${activeInst.name} (${activeInst.chineseName}) - Click to toggle instrument list`}
+            aria-label={isCollapsed ? `Expand instruments list (current: ${activeInst.name})` : 'Collapse instruments list'}
           >
+            <span className="text-cyan-300 font-extrabold text-xs shrink-0">
+              {activeInst.iconSymbol}
+            </span>
+            <span className="font-bold text-white max-w-[65px] xs:max-w-[90px] sm:max-w-[130px] truncate">{activeInst.name}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0 hidden xs:inline-block" />
             {isCollapsed ? (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3.5 h-3.5 text-cyan-300 shrink-0 ml-0.5" />
             ) : (
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-3.5 h-3.5 text-cyan-300 shrink-0 ml-0.5" />
             )}
           </button>
-        </div>
+        )}
       </div>
 
       {!isCollapsed && (
