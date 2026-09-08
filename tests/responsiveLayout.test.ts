@@ -54,9 +54,33 @@ describe('Mobile Viewport & Layout Helper Rules', () => {
   });
 
   it('should enforce touch target minimum heights for mobile buttons', () => {
-    const minMobileTouchTargetPx = 32;
+    const minMobileTouchTargetPx = 36;
     const standardMobileTouchTargetPx = 44;
-    expect(minMobileTouchTargetPx).toBeGreaterThanOrEqual(30);
+    expect(minMobileTouchTargetPx).toBeGreaterThanOrEqual(36);
     expect(standardMobileTouchTargetPx).toBeGreaterThanOrEqual(44);
+  });
+
+  it('should provide responsive mobileCode abbreviations for culture options to prevent word overflow', () => {
+    const cultureOptions = [
+      { id: 'Chinese', name: 'Chinese', shortName: 'Chinese', mobileCode: 'CN' },
+      { id: 'Japanese', name: 'Japanese', shortName: 'Japanese', mobileCode: 'JP' },
+      { id: 'Korean', name: 'Korean', shortName: 'Korean', mobileCode: 'KR' },
+      { id: 'Western', name: 'Western', shortName: 'Western', mobileCode: 'West' },
+    ];
+
+    cultureOptions.forEach((opt) => {
+      expect(opt.mobileCode.length).toBeLessThanOrEqual(4);
+      expect(opt.shortName.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('should verify confirm delete modal responsive bottom-sheet classes on mobile', () => {
+    const modalClasses = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200';
+    const sheetClasses = 'relative w-full max-w-md bg-[#0a0c1a] border-t sm:border border-rose-500/40 rounded-t-[28px] sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-4 sm:space-y-5 text-gray-100 ring-1 ring-rose-500/20 overflow-hidden';
+
+    expect(modalClasses).toContain('items-end');
+    expect(modalClasses).toContain('sm:items-center');
+    expect(sheetClasses).toContain('rounded-t-[28px]');
+    expect(sheetClasses).toContain('sm:rounded-3xl');
   });
 });

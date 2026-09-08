@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Play, Pause, Download, Video, ChevronRight, Share2, Check, Heart, Trash2, Activity, Dices } from 'lucide-react';
+import { Sparkles, Play, Pause, Download, Video, ChevronRight, Share2, Check, Heart, Trash2, Activity, Dices, Volume2 } from 'lucide-react';
+import { useAudioSession, useAudioTime } from '@seihouse/audio-player';
 import { SongResult } from '../../types';
-import { extractMetadata, formatShareText, copyToClipboard, getCultureForSong, CULTURAL_THEMES } from '../utils/helpers';
+import { extractMetadata, formatShareText, copyToClipboard, getCultureForSong, CULTURAL_THEMES, formatDuration } from '../utils/helpers';
 import { detectBpmFromAudio, detectKeyFromAudio } from '../utils/audioUtils';
+import { songResultToTrack } from '../utils/seihouseAudioAdapter';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 interface SongResultCardProps {
@@ -65,6 +67,11 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
   const culture = getCultureForSong(result.soundscapeConfig, result.fullPrompt || result.originalPrompt, result.title);
   const theme = CULTURAL_THEMES[culture];
 
+  const session = useAudioSession();
+  const audioTime = useAudioTime();
+  const isThisActiveTrack = session.currentTrack?.id === result.id;
+  const isCardPlaying = isThisActiveTrack && session.isPlaying;
+
   const handleConfirmDelete = () => {
     setShowDeleteModal(false);
     if (onDelete) {
@@ -92,16 +99,17 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
     }
   };
 
-  const handlePlayButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePlayButtonClick = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (isGenerating) return;
+    if (!result.audioUrl && !result.audioBase64) return;
 
-    const audio = document.getElementById(`audio-${result.id}`) as HTMLAudioElement;
-    if (audio) {
-      if (audio.paused) {
-        audio.play().catch(e => console.warn('Play interrupted:', e));
-      } else {
-        audio.pause();
+    if (isThisActiveTrack) {
+      session.toggle();
+    } else {
+      session.playNow(songResultToTrack(result));
+      if (onPlayStateChange) {
+        onPlayStateChange(result.id);
       }
     }
   };
@@ -148,6 +156,13 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
           ) : (
             <div className={`w-full h-full flex items-center justify-center ${theme.iconColor}`}>
               <Sparkles className={`w-5 h-5 sm:w-6 sm:h-6 ${isGenerating ? 'animate-pulse' : ''}`} />
+            </div>
+          )}
+          {isCardPlaying && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex gap-0.5 items-center justify-center">
+              <span className="eq-bar !h-2"></span>
+              <span className="eq-bar !h-3"></span>
+              <span className="eq-bar !h-2"></span>
             </div>
           )}
         </div>
@@ -213,7 +228,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             onClick={handleFavoriteClick}
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center transition-all cursor-pointer ${
               result.isFavorite
                 ? 'bg-rose-500/30 text-rose-300 border border-rose-400/60 shadow-sm shadow-rose-950/40'
                 : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-rose-400 border border-slate-600'
@@ -222,7 +237,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
             aria-label={result.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart
-              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all ${
+              className={`w-4 h-4 transition-all ${
                 result.isFavorite ? 'fill-rose-400 text-rose-300 scale-105' : ''
               }`}
             />
@@ -233,11 +248,11 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
               e.stopPropagation();
               onDownloadMP3(result);
             }}
-            className="hidden xs:flex w-8 h-8 sm:w-10 sm:h-10 rounded-full items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600"
+            className="hidden xs:flex w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] rounded-full items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600"
             title="Download MP3 audio"
             aria-label="Download MP3 audio"
           >
-            <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${theme.accentText}`} />
+            <Download className={`w-4 h-4 ${theme.accentText}`} />
           </button>
 
           <button
@@ -245,24 +260,24 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
               e.stopPropagation();
               setShowDeleteModal(true);
             }}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-rose-950/80 text-slate-300 hover:text-rose-400 border border-slate-600 hover:border-rose-500/50"
+            className="w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center transition-all cursor-pointer bg-slate-800/80 hover:bg-rose-950/80 text-slate-300 hover:text-rose-400 border border-slate-600 hover:border-rose-500/50"
             title="Delete soundscape"
             aria-label="Delete soundscape"
           >
-            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
+            <Trash2 className="w-4 h-4 text-rose-400" />
           </button>
 
           <button
             onClick={handlePlayButtonClick}
-            disabled={!result.audioUrl && !isGenerating}
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-              isPlaying
+            disabled={!result.audioUrl && !result.audioBase64 && !isGenerating}
+            className={`w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              isCardPlaying
                 ? `${theme.playBtnBg}`
                 : 'bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600'
             }`}
-            aria-label={isPlaying ? 'Pause soundscape' : 'Play soundscape'}
+            aria-label={isCardPlaying ? 'Pause soundscape' : 'Play soundscape'}
           >
-            {isPlaying ? <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />}
+            {isCardPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
           </button>
 
           <button
@@ -270,7 +285,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
               e.stopPropagation();
               onToggleExpand(result.id);
             }}
-            className="p-1 sm:p-2 text-slate-300 hover:text-white transition-transform cursor-pointer min-w-[28px] sm:min-w-[32px] min-h-[28px] sm:min-h-[32px] flex items-center justify-center"
+            className="p-1 sm:p-2 text-slate-300 hover:text-white transition-transform cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
             aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
             title={isExpanded ? 'Collapse details' : 'Expand details'}
           >
@@ -287,17 +302,82 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
       {/* Expandable details */}
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-slate-700/80 space-y-4 animate-in fade-in duration-200">
-          {result.audioUrl && (
+          {(result.audioUrl || result.audioBase64) && (
             <div className="space-y-3">
-              <audio
-                id={`audio-${result.id}`}
-                src={result.audioUrl}
-                onPlay={() => onPlayStateChange(result.id)}
-                onPause={() => onPlayStateChange(null)}
-                onEnded={() => onPlayStateChange(null)}
-                controls
-                className="w-full h-10 rounded-xl"
-              />
+              {isThisActiveTrack ? (
+                <div className="p-3 rounded-xl bg-slate-900/90 border border-cyan-500/40 shadow-inner space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => session.toggle()}
+                        aria-label={session.isPlaying ? 'Pause' : 'Play'}
+                        className="w-9 h-9 rounded-full bg-cyan-500/30 hover:bg-cyan-500/40 border border-cyan-400 text-cyan-200 flex items-center justify-center shrink-0 cursor-pointer shadow-sm transition-transform active:scale-95"
+                      >
+                        {session.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                      </button>
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-mono text-cyan-300 font-bold block truncate">
+                          Playing in @seihouse/audio-player
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {formatDuration(audioTime.currentTime)} / {formatDuration(audioTime.duration || 30)}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => session.toggleMute()}
+                      aria-label={session.isMuted ? 'Unmute' : 'Mute'}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer transition-colors border border-slate-700"
+                    >
+                      <Volume2 className={`w-3.5 h-3.5 ${session.isMuted ? 'text-rose-400' : 'text-cyan-300'}`} />
+                    </button>
+                  </div>
+
+                  {/* Scrubber slider */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="range"
+                      min={0}
+                      max={audioTime.duration || 30}
+                      step={0.1}
+                      value={audioTime.currentTime || 0}
+                      onChange={(e) => session.seek(parseFloat(e.target.value))}
+                      className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                      aria-label="Seek track"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-700/80 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <button
+                      type="button"
+                      onClick={handlePlayButtonClick}
+                      className="w-9 h-9 rounded-full bg-slate-800 hover:bg-cyan-500/20 border border-slate-600 hover:border-cyan-400 text-white hover:text-cyan-300 flex items-center justify-center shrink-0 cursor-pointer shadow-sm transition-all active:scale-95"
+                      aria-label="Play soundscape"
+                    >
+                      <Play className="w-4 h-4 ml-0.5" />
+                    </button>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-200 block truncate">
+                        {result.title || 'Celestial Soundscape'}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        Ready for playback in @seihouse/audio-player
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePlayButtonClick}
+                    className="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 text-xs font-bold shrink-0 cursor-pointer transition-all"
+                  >
+                    Play Now
+                  </button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <button
@@ -341,6 +421,13 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
                   )}
                 </button>
               </div>
+            </div>
+          )}
+
+          {result.error && (
+            <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-200 text-xs space-y-1">
+              <span className="font-bold block uppercase tracking-wider text-[10px] text-rose-400">Synthesis Error Details</span>
+              <p className="font-mono text-xs break-words">{result.error}</p>
             </div>
           )}
 

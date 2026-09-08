@@ -251,11 +251,18 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
           className="w-full py-3 bg-cyan-500/30 border border-cyan-400/60 hover:bg-cyan-500/40 text-cyan-200 font-extrabold text-xs uppercase tracking-wider rounded-2xl transition-all disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer min-h-[44px] active:scale-[0.98] shadow-md shadow-cyan-950/40"
         >
           {isTranslating ? (
-            <Loader2 className="w-4 h-4 animate-spin text-cyan-300" />
+            <Loader2 className="w-4 h-4 animate-spin text-cyan-300 shrink-0" />
           ) : (
-            <Sparkles className="w-4 h-4 text-cyan-300" />
+            <Sparkles className="w-4 h-4 text-cyan-300 shrink-0" />
           )}
-          {isTranslating ? "Parsing Soundscape coordinates..." : "Extract Soundscape Coordinates"}
+          <span className="truncate">
+            <span className="hidden xs:inline">
+              {isTranslating ? "Parsing Soundscape coordinates..." : "Extract Soundscape Coordinates"}
+            </span>
+            <span className="xs:hidden">
+              {isTranslating ? "Parsing coordinates..." : "Extract Coordinates"}
+            </span>
+          </span>
         </button>
       </div>
 
@@ -264,14 +271,14 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
         <button
           onClick={() => setShowAdvancedParams(!showAdvancedParams)}
           aria-label={showAdvancedParams ? 'Hide extracted schema parameters' : 'View or edit extracted schema parameters'}
-          className="flex items-center justify-between w-full text-left text-xs font-bold text-slate-200 hover:text-white py-1 cursor-pointer"
+          className="flex items-center justify-between w-full text-left text-xs font-bold text-slate-200 hover:text-white py-1.5 cursor-pointer min-h-[36px]"
         >
-          <span className="flex items-center gap-1.5 uppercase tracking-wider text-xs">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />
-            Extracted Schema Parameters
+          <span className="flex items-center gap-1.5 uppercase tracking-wider text-xs truncate mr-2">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <span className="truncate">Extracted Schema Parameters</span>
           </span>
-          <span className="text-xs text-cyan-300 font-bold underline">
-            {showAdvancedParams ? 'Hide Details' : 'View / Edit Parameters'}
+          <span className="text-xs text-cyan-300 font-bold underline shrink-0">
+            {showAdvancedParams ? 'Hide Details' : 'View / Edit'}
           </span>
         </button>
 

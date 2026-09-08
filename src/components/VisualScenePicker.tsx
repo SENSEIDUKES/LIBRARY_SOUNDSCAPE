@@ -298,11 +298,11 @@ export const VisualScenePicker: React.FC<VisualScenePickerProps> = ({
         <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-sm">
           {isDragging ? <UploadCloud className="w-5 h-5 animate-bounce" /> : <Camera className="w-5 h-5" />}
         </div>
-        <div>
-          <p className="text-xs font-extrabold text-white tracking-tight">
+        <div className="px-1 text-center">
+          <p className="text-xs font-extrabold text-white tracking-tight break-words">
             Drop photo or tap to upload mystical mountains & chapter scenes
           </p>
-          <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+          <p className="text-[10px] text-slate-400 font-medium mt-0.5 break-words">
             PNG, JPG, or WEBP. Directs Lyria 3.5's acoustic timbre & ambient textures.
           </p>
         </div>
@@ -320,7 +320,7 @@ export const VisualScenePicker: React.FC<VisualScenePickerProps> = ({
               type="button"
               onClick={handleAnalyzeActiveImage}
               disabled={isAnalyzing}
-              className="px-2.5 py-1.5 rounded-lg bg-cyan-500/25 hover:bg-cyan-500/35 border border-cyan-400/50 text-cyan-200 text-[10px] font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-40 shrink-0 min-h-[32px]"
+              className="px-2.5 py-1.5 rounded-xl bg-cyan-500/25 hover:bg-cyan-500/35 border border-cyan-400/50 text-cyan-200 text-[10px] font-extrabold flex items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-40 shrink-0 min-h-[36px]"
               aria-label="Analyze active image with Gemini to auto-tune soundscape coordinates"
             >
               {isAnalyzing ? (
@@ -328,7 +328,10 @@ export const VisualScenePicker: React.FC<VisualScenePickerProps> = ({
               ) : (
                 <Sparkles className="w-3 h-3 text-cyan-400 shrink-0" />
               )}
-              <span>{isAnalyzing ? 'Analyzing Scene...' : 'Auto-Tune from Image'}</span>
+              <span>
+                <span className="hidden xs:inline">{isAnalyzing ? 'Analyzing Scene...' : 'Auto-Tune from Image'}</span>
+                <span className="xs:hidden">{isAnalyzing ? 'Analyzing...' : 'Auto-Tune'}</span>
+              </span>
             </button>
           </div>
 

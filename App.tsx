@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Wand2, ListMusic } from 'lucide-react';
 import { LyricsOption, SongResult } from './types';
-import { EXAMPLE_SONGS } from './constants';
-import { CONFIG } from './src/config';
+import { CONFIG, normalizeMusicModelId } from './src/config';
 import { getAutoExportName, getRandomItem } from './src/utils/helpers';
 import { handleDownloadVideo } from './src/utils/videoUtils';
 
@@ -90,10 +89,10 @@ const App: React.FC = () => {
   const [isBpmDetectorOpen, setIsBpmDetectorOpen] = useState(false);
   const [selectedMusicModel, setSelectedMusicModel] = useState<string>(() => {
     const saved = localStorage.getItem('sen_music_model');
-    if (!saved || saved === 'lyria-3-pro-preview') {
+    if (!saved || saved.includes('3.5')) {
       return CONFIG.MODEL_ID_FULL;
     }
-    return saved;
+    return normalizeMusicModelId(saved);
   });
   const [temperature, setTemperature] = useState<number>(() => {
     const saved = localStorage.getItem('sen_temperature');
@@ -266,11 +265,6 @@ const App: React.FC = () => {
     );
   };
 
-  const playingPreset = EXAMPLE_SONGS.find((s) => s.id === activePresetPlaying);
-  const playingResult =
-    gen.results.find((r) => r.id === isResultPlaying) ||
-    favoriteResults.find((r) => r.id === isResultPlaying);
-
   return (
     <div className="min-h-screen flex flex-col bg-[#05060e] text-gray-100 font-sans pb-28 sm:pb-24 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] overflow-x-clip">
       <Header
@@ -281,8 +275,8 @@ const App: React.FC = () => {
       />
 
       <section className="py-5 sm:py-8 px-3 sm:px-6 text-center bg-radial-gradient relative overflow-hidden select-none">
-        <div className="mb-3 sm:mb-4 px-3 sm:px-4 py-1.5 bg-cyan-950/70 border border-cyan-400/50 rounded-full w-full max-w-xl mx-auto flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-md shadow-md overflow-hidden">
-          <span className="text-[10px] sm:text-xs font-extrabold tracking-widest text-cyan-300 uppercase shrink-0 flex items-center gap-1">
+        <div className="mb-3 sm:mb-4 px-2.5 sm:px-4 py-1.5 bg-cyan-950/70 border border-cyan-400/50 rounded-full w-full max-w-xl mx-auto flex items-center justify-center gap-1.5 sm:gap-2 backdrop-blur-md shadow-md overflow-hidden">
+          <span className="text-[10px] sm:text-xs font-extrabold tracking-wider sm:tracking-widest text-cyan-300 uppercase shrink-0 flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> DAO INSIGHT
           </span>
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 shrink-0" />
@@ -292,7 +286,7 @@ const App: React.FC = () => {
         <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white uppercase font-displaySc drop-shadow-md px-2">
           SEN Soundscapes
         </h1>
-        <p className="text-[10px] xs:text-xs sm:text-sm text-cyan-300 mt-1 sm:mt-2 font-bold tracking-widest uppercase px-2 leading-relaxed">
+        <p className="text-[10px] xs:text-xs sm:text-sm text-cyan-300 mt-1 sm:mt-2 font-bold tracking-wider sm:tracking-widest uppercase px-2 leading-relaxed break-words">
           Expanded Novels • Celestial Immersive Audio Companion
         </p>
       </section>
@@ -441,51 +435,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {(playingPreset || playingResult) && (
-        <PlayerBar
-          title={
-            playingPreset
-              ? playingPreset.title
-              : playingResult?.title || 'Celestial Soundscape'
-          }
-          artist={
-            playingPreset
-              ? playingPreset.artist
-              : playingResult?.soundscapeConfig?.instrument || 'SEN Formations'
-          }
-          coverUrl={playingPreset ? playingPreset.coverUrl : (playingResult?.coverImageUrl || undefined)}
-          isPlaying={true}
-          onTogglePlay={() => {
-            if (playingPreset) {
-              togglePresetPlaying(playingPreset.id);
-            } else if (playingResult) {
-              const audio = document.getElementById(
-                `audio-${playingResult.id}`
-              ) as HTMLAudioElement;
-              if (audio) {
-                if (audio.paused) {
-                  audio.play().catch(e => console.warn('Play interrupted:', e));
-                } else {
-                  audio.pause();
-                }
-              }
-            }
-          }}
-          onClose={() => {
-            if (playingPreset) {
-              togglePresetPlaying(playingPreset.id);
-            } else if (playingResult) {
-              const audio = document.getElementById(
-                `audio-${playingResult.id}`
-              ) as HTMLAudioElement;
-              if (audio) {
-                audio.pause();
-              }
-              setIsResultPlaying(null);
-            }
-          }}
-        />
-      )}
+      <PlayerBar />
 
       <SettingsModal
         isOpen={isSettingsOpen}

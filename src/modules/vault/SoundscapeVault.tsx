@@ -436,7 +436,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleSelectAllFavorites}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-extrabold border border-slate-700 transition-all cursor-pointer min-h-[36px]"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-extrabold border border-slate-700 transition-all cursor-pointer min-h-[42px] sm:min-h-[36px]"
                   >
                     {allVisibleFavoritesSelected ? (
                       <CheckSquare className="w-4 h-4 text-rose-400" />
@@ -456,7 +456,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 <button
                   onClick={handleDownloadSelectedZip}
                   disabled={isZipping || filteredFavorites.length === 0}
-                  className={`w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[36px] shadow-md ${
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] shadow-md ${
                     isZipping
                       ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
                       : 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 shadow-rose-950/60 active:scale-95'

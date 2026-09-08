@@ -36,16 +36,19 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-delete-title"
     >
       <div
-        className="relative w-full max-w-md bg-[#0a0c1a] border border-rose-500/40 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-gray-100 ring-1 ring-rose-500/20 overflow-hidden"
+        className="relative w-full max-w-md bg-[#0a0c1a] border-t sm:border border-rose-500/40 rounded-t-[28px] sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-4 sm:space-y-5 text-gray-100 ring-1 ring-rose-500/20 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile pull indicator */}
+        <div className="w-12 h-1.5 bg-slate-700/80 rounded-full mx-auto -mt-1 mb-2 sm:hidden" />
+
         {/* Warning Accent Bar */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 via-rose-400 to-amber-500" />
 

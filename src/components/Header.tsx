@@ -52,10 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
         {onOpenBpmDetector && (
           <button
             onClick={onOpenBpmDetector}
-            className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-xs font-bold text-cyan-200 transition-all active:scale-95 cursor-pointer min-h-[36px] shadow-sm"
+            className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-xs font-bold text-cyan-200 transition-all active:scale-95 cursor-pointer min-h-[40px] min-w-[40px] shadow-sm"
             aria-label="Open Real BPM Detector"
           >
-            <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse shrink-0" />
+            <Activity className="w-4 h-4 text-cyan-400 animate-pulse shrink-0" />
             <span className="hidden sm:inline">BPM Detector</span>
           </button>
         )}
@@ -63,10 +63,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Settings button */}
         <button
           onClick={onOpenSettings}
-          className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-white transition-all active:scale-95 cursor-pointer min-h-[36px] shadow-sm"
+          className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-white transition-all active:scale-95 cursor-pointer min-h-[40px] min-w-[40px] shadow-sm"
           aria-label="Open Settings"
         >
-          <Sliders className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <Sliders className="w-4 h-4 text-cyan-400 shrink-0" />
           <span className="hidden sm:inline">Settings</span>
         </button>
       </div>

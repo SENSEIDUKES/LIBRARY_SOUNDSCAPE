@@ -23,24 +23,14 @@ export interface MusicModelOption {
 
 export const AVAILABLE_MUSIC_MODELS: MusicModelOption[] = [
   {
-    id: "lyria-3.5-pro-preview",
-    name: "Lyria 3.5 Pro",
+    id: "lyria-3-pro-preview",
+    name: "Lyria 3 Pro",
     tagline: "Flagship High-Fidelity Cinematic Soundscape Engine",
-    description: "Google DeepMind's flagship Lyria 3.5 music generation model with advanced structural coherence, deep spatial acoustic resolution, and extended track duration.",
+    description: "Google DeepMind's flagship Lyria 3 Pro music generation model with advanced structural coherence, deep spatial acoustic resolution, and full track duration.",
     latency: "Standard (~2.2s)",
     fidelity: "24-bit / 48kHz Stereo",
-    badge: "Pro 3.5",
+    badge: "Pro",
     recommended: true,
-  },
-  {
-    id: "lyria-3.5",
-    name: "Lyria 3.5",
-    tagline: "Next-Gen Full-Length Song & Multimodal Synthesis",
-    description: "Optimized for full-length structural songs, multimodal image-to-music generation, and expressive traditional/modern instrumentation.",
-    latency: "Balanced (~1.8s)",
-    fidelity: "24-bit / 44.1kHz Stereo",
-    badge: "v3.5",
-    recommended: false,
   },
   {
     id: "lyria-3-clip-preview",
@@ -55,9 +45,21 @@ export const AVAILABLE_MUSIC_MODELS: MusicModelOption[] = [
 ];
 
 export const CONFIG = {
-  MODEL_ID_FULL: "lyria-3.5-pro-preview",
+  MODEL_ID_FULL: "lyria-3-pro-preview",
   IMAGE_MODEL: "gemini-3.1-flash-lite-image",
   TEXT_MODEL: "gemini-3.6-flash",
   IS_MAINTENANCE_MODE: false,
 };
+
+/**
+ * Normalizes legacy or arbitrary model IDs to supported Google Lyria model identifiers.
+ */
+export function normalizeMusicModelId(modelId?: string): string {
+  if (!modelId) return CONFIG.MODEL_ID_FULL;
+  const trimmed = modelId.trim();
+  if (trimmed.includes("clip")) {
+    return "lyria-3-clip-preview";
+  }
+  return "lyria-3-pro-preview";
+}
 

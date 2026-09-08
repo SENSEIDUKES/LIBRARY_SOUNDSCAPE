@@ -69,7 +69,7 @@ export const ManualConsole: React.FC<ManualConsoleProps> = ({
               key={option}
               onClick={() => setLyricsOption(option)}
               aria-label={`Select ${option} lyrics option`}
-              className={`px-1 sm:px-2 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[36px] truncate ${
+              className={`px-1 sm:px-2 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[42px] sm:min-h-[38px] truncate ${
                 lyricsOption === option
                   ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -84,8 +84,8 @@ export const ManualConsole: React.FC<ManualConsoleProps> = ({
       {lyricsOption === 'Custom' && (
         <div className="animate-in fade-in zoom-in-95 duration-200">
           <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider mb-1.5 flex justify-between items-center">
-            <span>Custom Lyrics</span>
-            <span className="text-[10px] text-slate-400 normal-case font-medium">Lyria will attempt to sing these</span>
+            <span className="shrink-0">Custom Lyrics</span>
+            <span className="text-[10px] text-slate-400 normal-case font-medium truncate ml-2">Lyria will attempt to sing these</span>
           </label>
           <textarea
             value={customLyrics}
@@ -140,7 +140,7 @@ export const ManualConsole: React.FC<ManualConsoleProps> = ({
               key={gender}
               onClick={() => setVoiceGender(gender)}
               aria-label={`Select ${gender} vocal bias`}
-              className={`px-1 sm:px-2 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[36px] truncate ${
+              className={`px-1 sm:px-2 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer min-h-[42px] sm:min-h-[38px] truncate ${
                 voiceGender === gender
                   ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/60 shadow-sm'
                   : 'text-slate-300 hover:text-white'

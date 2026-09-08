@@ -440,10 +440,10 @@ export interface ChineseInstrumentListProps {
 }
 
 const CULTURE_OPTIONS = [
-  { id: 'Chinese', name: 'Chinese', shortName: 'Chinese', tag: 'Wuxia' },
-  { id: 'Japanese', name: 'Japanese', shortName: 'Japanese', tag: 'Traditional' },
-  { id: 'Korean', name: 'Korean', shortName: 'Korean', tag: 'Gukak' },
-  { id: 'Western', name: 'Western', shortName: 'Western', tag: 'Epic' },
+  { id: 'Chinese', name: 'Chinese', shortName: 'Chinese', mobileCode: 'CN', tag: 'Wuxia' },
+  { id: 'Japanese', name: 'Japanese', shortName: 'Japanese', mobileCode: 'JP', tag: 'Traditional' },
+  { id: 'Korean', name: 'Korean', shortName: 'Korean', mobileCode: 'KR', tag: 'Gukak' },
+  { id: 'Western', name: 'Western', shortName: 'Western', mobileCode: 'West', tag: 'Epic' },
 ];
 
 const CULTURE_INFO: Record<string, { title: string; subtitle: string; tag: string }> = {
@@ -502,14 +502,15 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
                 key={c.id}
                 type="button"
                 onClick={() => onCultureChange?.(c.id)}
-                className={`px-1.5 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap text-center border flex items-center justify-center ${
+                className={`px-1 sm:px-2.5 py-1.5 rounded-xl text-[10px] sm:text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap text-center border flex items-center justify-center min-h-[36px] ${
                   isSelected
                     ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400/80 shadow-xs shadow-cyan-950/50 ring-1 ring-cyan-400/40'
                     : 'bg-slate-900/80 text-slate-400 border-slate-700/70 hover:bg-slate-800 hover:text-slate-200'
                 }`}
                 aria-label={`Switch culture to ${c.name}`}
               >
-                <span>{c.shortName}</span>
+                <span className="hidden xs:inline">{c.shortName}</span>
+                <span className="xs:hidden">{c.mobileCode}</span>
                 <span className="ml-1 text-[8px] opacity-75 font-normal hidden md:inline">
                   ({c.tag})
                 </span>
@@ -544,7 +545,7 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-950/90 hover:bg-cyan-900/90 border border-cyan-400/60 text-cyan-200 text-xs font-bold shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[36px]"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-950/90 hover:bg-cyan-900/90 border border-cyan-400/60 text-cyan-200 text-xs font-bold shrink-0 shadow-sm transition-all active:scale-95 cursor-pointer min-h-[40px] sm:min-h-[36px]"
             title={`Current motif: ${activeInst.name} (${activeInst.chineseName}) - Click to toggle instrument list`}
             aria-label={isCollapsed ? `Expand instruments list (current: ${activeInst.name})` : 'Collapse instruments list'}
           >

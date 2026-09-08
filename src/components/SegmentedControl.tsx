@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string>({
             aria-selected={isActive}
             aria-label={`Switch view to ${option.label}`}
             onClick={() => onChange(option.id)}
-            className={`relative flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 rounded-full font-bold transition-all duration-300 ease-out cursor-pointer min-h-[38px] ${
+            className={`relative flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 rounded-full font-bold transition-all duration-300 ease-out cursor-pointer min-h-[42px] sm:min-h-[44px] ${
               buttonPaddingMap[size]
             } ${
               isActive
@@ -57,7 +57,7 @@ export function SegmentedControl<T extends string>({
             }`}
           >
             {option.icon && <span className="shrink-0 text-cyan-300">{option.icon}</span>}
-            <span className="truncate">{option.label}</span>
+            <span className="truncate whitespace-nowrap">{option.label}</span>
             {option.badge !== undefined && (
               <span
                 className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${

@@ -12,16 +12,32 @@ import { logFunctionCall } from './logger';
  * @param mimeType The MIME type of the audio (e.g., 'audio/wav').
  * @returns A string representing the object URL, or an empty string if decoding fails.
  */
-export const createAudioUrlFromBase64 = (base64: string, mimeType: string): string => {
+export const createAudioUrlFromBase64 = (base64: string, mimeType: string = 'audio/mpeg'): string => {
   logFunctionCall('createAudioUrlFromBase64', { base64Length: base64.length, mimeType });
   try {
+    // Auto-detect audio format from binary signature if ambiguous
+    let resolvedMime = mimeType || 'audio/mpeg';
+    if (base64.startsWith('UklGR')) {
+      resolvedMime = 'audio/wav';
+    } else if (
+      base64.startsWith('SUQz') ||
+      base64.startsWith('/+NI') ||
+      base64.startsWith('/+MY') ||
+      base64.startsWith('//O') ||
+      base64.startsWith('//u') ||
+      mimeType.includes('mpeg') ||
+      mimeType.includes('mp3')
+    ) {
+      resolvedMime = 'audio/mpeg';
+    }
+
     const binaryString = atob(base64);
     const len = binaryString.length;
     const bytes = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
-    const blob = new Blob([bytes], { type: mimeType });
+    const blob = new Blob([bytes], { type: resolvedMime });
     return URL.createObjectURL(blob);
   } catch (e) {
     console.error("Failed to decode audio base64:", e);
