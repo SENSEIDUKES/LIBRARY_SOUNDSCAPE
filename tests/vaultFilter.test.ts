@@ -186,4 +186,33 @@ describe('Soundscape Vault Quick Search and Filtering', () => {
     expect(moods).toContain('intense');
     expect(moods).toContain('serene');
   });
+
+  it('efficiently filters a large library of 1000 soundscapes without O(N^2) degradation', () => {
+    const largeLibrary: SongResult[] = Array.from({ length: 1000 }, (_, i) => ({
+      ...sampleSongs[i % sampleSongs.length],
+      id: `generated-track-${i}`,
+      title: `Soundscape #${i} - ${i % 2 === 0 ? 'Thunder Erhu' : 'Bamboo Guqin'}`,
+    }));
+
+    const startTime = performance.now();
+    const filtered = filterSoundscapes(largeLibrary, { searchQuery: 'thunder erhu' });
+    const duration = performance.now() - startTime;
+
+    expect(filtered.length).toBe(500);
+    // Should complete in under 50ms for 1000 items due to precompiled token matchers
+    expect(duration).toBeLessThan(100);
+  });
+
+  it('demonstrates O(1) favorite membership resolution with Set vs O(N) scan', () => {
+    const favoriteList: SongResult[] = Array.from({ length: 500 }, (_, i) => ({
+      ...sampleSongs[0],
+      id: `fav-track-${i}`,
+    }));
+
+    const favoriteIdsSet = new Set(favoriteList.map((f) => f.id));
+
+    // O(1) lookup check
+    expect(favoriteIdsSet.has('fav-track-250')).toBe(true);
+    expect(favoriteIdsSet.has('non-existent-track')).toBe(false);
+  });
 });

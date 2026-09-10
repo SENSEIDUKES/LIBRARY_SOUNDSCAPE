@@ -37,9 +37,10 @@ export function useFavorites(genResults: SongResult[]) {
   // Keep favoriteResults in sync when genResults updates (e.g. status/audio/logs change)
   useEffect(() => {
     if (favoriteResults.length > 0 && genResults.length > 0) {
+      const genResultsMap = new Map(genResults.map((r) => [r.id, r]));
       setFavoriteResults((prev) =>
         prev.map((fav) => {
-          const updated = genResults.find((r) => r.id === fav.id);
+          const updated = genResultsMap.get(fav.id);
           return updated ? { ...updated, isFavorite: true } : fav;
         })
       );

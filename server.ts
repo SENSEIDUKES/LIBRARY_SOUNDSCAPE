@@ -33,18 +33,8 @@ async function startServer() {
   // Lyria Music Generation Route
   app.post("/api/gemini/lyria", async (req, res) => {
     try {
-      const { prompt, modelId = "lyria-3-pro-preview", images } = req.body;
+      const { prompt, modelId = "lyria-3.5-pro-preview", images } = req.body;
       const ai = getGenAI();
-
-      // Normalize model to official Google Lyria models (lyria-3-pro-preview, lyria-3-clip-preview)
-      let targetModel = (modelId || "lyria-3-pro-preview").trim();
-      if (targetModel.includes("clip")) {
-        targetModel = "lyria-3-clip-preview";
-      } else {
-        targetModel = "lyria-3-pro-preview";
-      }
-
-      console.log(`[Lyria API] Generating music with model: ${targetModel}`);
 
       let contents: any = prompt;
       if (Array.isArray(images) && images.length > 0) {
@@ -66,7 +56,7 @@ async function startServer() {
       }
 
       const responseStream = await ai.models.generateContentStream({
-        model: targetModel,
+        model: modelId,
         contents,
         config: {
           responseModalities: [Modality.AUDIO],
@@ -76,14 +66,14 @@ async function startServer() {
       let audioBase64 = "";
       let lyrics = "";
       let metadata = "";
-      let mimeType = "audio/mpeg";
+      let mimeType = "audio/wav";
 
       for await (const chunk of responseStream) {
         const parts = chunk.candidates?.[0]?.content?.parts;
         if (!parts) continue;
         for (const part of parts) {
           if (part.inlineData?.data) {
-            if (part.inlineData.mimeType) {
+            if (!audioBase64 && part.inlineData.mimeType) {
               mimeType = part.inlineData.mimeType;
             }
             audioBase64 += part.inlineData.data;
@@ -100,7 +90,7 @@ async function startServer() {
 
       if (!audioBase64) {
         const directResponse = await ai.models.generateContent({
-          model: targetModel,
+          model: modelId,
           contents,
           config: {
             responseModalities: [Modality.AUDIO],
@@ -121,15 +111,13 @@ async function startServer() {
       }
 
       if (audioBase64) {
-        console.log(`[Lyria API] Generation succeeded (${audioBase64.length} base64 chars, ${mimeType})`);
         res.json({ success: true, base64: audioBase64, mimeType, lyrics, metadata });
       } else {
         res.status(500).json({ success: false, error: "No audio data returned from Lyria model." });
       }
     } catch (err: any) {
-      const errorMsg = err?.message || err?.toString() || "Failed to generate Lyria audio.";
-      console.error("[Lyria API Error]:", errorMsg);
-      res.status(500).json({ success: false, error: errorMsg });
+      console.error("Error in /api/gemini/lyria:", err);
+      res.status(500).json({ success: false, error: err?.message || "Failed to generate Lyria audio." });
     }
   });
 

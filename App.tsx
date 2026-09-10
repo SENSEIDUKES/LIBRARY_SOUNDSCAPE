@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Wand2, ListMusic } from 'lucide-react';
 import { LyricsOption, SongResult } from './types';
-import { CONFIG, normalizeMusicModelId } from './src/config';
+import { CONFIG } from './src/config';
 import { getAutoExportName, getRandomItem } from './src/utils/helpers';
 import { handleDownloadVideo } from './src/utils/videoUtils';
 
@@ -89,10 +89,10 @@ const App: React.FC = () => {
   const [isBpmDetectorOpen, setIsBpmDetectorOpen] = useState(false);
   const [selectedMusicModel, setSelectedMusicModel] = useState<string>(() => {
     const saved = localStorage.getItem('sen_music_model');
-    if (!saved || saved.includes('3.5')) {
+    if (!saved || saved === 'lyria-3-pro-preview') {
       return CONFIG.MODEL_ID_FULL;
     }
-    return normalizeMusicModelId(saved);
+    return saved;
   });
   const [temperature, setTemperature] = useState<number>(() => {
     const saved = localStorage.getItem('sen_temperature');
@@ -164,8 +164,9 @@ const App: React.FC = () => {
   const handleCultureChange = (newCulture: string) => {
     setCulture(newCulture);
     const instruments = getInstrumentsForCulture(newCulture);
+    const lowerCurrentInst = soundscapeConfig.instrument.toLowerCase();
     const currentMatches = instruments.some(
-      (inst) => inst.name.toLowerCase() === soundscapeConfig.instrument.toLowerCase()
+      (inst) => inst.name.toLowerCase() === lowerCurrentInst
     );
     if (!currentMatches && instruments.length > 0) {
       const defaultInst = instruments[0];

@@ -480,11 +480,12 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
   const currentInstruments = getInstrumentsForCulture(culture);
   const info = CULTURE_INFO[culture] || CULTURE_INFO['Chinese'];
 
+  const lowerActive = activeInstrument.toLowerCase();
   const activeInst = currentInstruments.find(
     (inst) =>
-      activeInstrument.toLowerCase() === inst.name.toLowerCase() ||
-      activeInstrument.toLowerCase().includes(inst.id) ||
-      inst.name.toLowerCase().includes(activeInstrument.toLowerCase())
+      lowerActive === inst.name.toLowerCase() ||
+      lowerActive.includes(inst.id) ||
+      inst.name.toLowerCase().includes(lowerActive)
   ) || currentInstruments[0];
 
   return (
@@ -607,10 +608,7 @@ export const ChineseInstrumentList: React.FC<ChineseInstrumentListProps> = ({
             }`}
           >
             {currentInstruments.map((inst) => {
-              const isActive =
-                activeInstrument.toLowerCase() === inst.name.toLowerCase() ||
-                activeInstrument.toLowerCase().includes(inst.id) ||
-                inst.name.toLowerCase().includes(activeInstrument.toLowerCase());
+              const isActive = inst.id === activeInst?.id;
 
               if (viewDensity === 'compact') {
                 return (

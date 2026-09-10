@@ -5,7 +5,7 @@
  * It connects to server API endpoints and includes fallback logic for robust music and text generation.
  */
 import { GoogleGenAI, Modality } from "@google/genai";
-import { CONFIG, normalizeMusicModelId } from '../config';
+import { CONFIG } from '../config';
 import { logFunctionCall, logGenAiCall } from '../utils/logger';
 import { createAudioUrlFromBase64, createSyntheticSoundscape } from '../utils/audioUtils';
 import { generateRandomTitle } from '../utils/titleUtils';
@@ -33,7 +33,7 @@ export const generateLyriaAudio = async (
     durationSeconds,
     imageCount: images?.length || 0,
   });
-  const modelToUse = normalizeMusicModelId(modelId || CONFIG.MODEL_ID_FULL);
+  const modelToUse = modelId || CONFIG.MODEL_ID_FULL;
 
   // 1. Try server API endpoint first
   try {
@@ -46,7 +46,7 @@ export const generateLyriaAudio = async (
     if (apiRes.ok) {
       const data = await apiRes.json();
       if (data.success && data.base64) {
-        const audioUrl = createAudioUrlFromBase64(data.base64, data.mimeType || "audio/mpeg");
+        const audioUrl = createAudioUrlFromBase64(data.base64, data.mimeType || "audio/wav");
         return {
           audioUrl,
           base64: data.base64,
@@ -54,9 +54,6 @@ export const generateLyriaAudio = async (
           metadata: data.metadata,
         };
       }
-    } else {
-      const errorJson = await apiRes.json().catch(() => null);
-      console.warn("Lyria API server endpoint returned error status:", apiRes.status, errorJson);
     }
   } catch (err) {
     console.warn("Server API route /api/gemini/lyria unavailable, attempting direct SDK fallback...", err);

@@ -424,13 +424,6 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
             </div>
           )}
 
-          {result.error && (
-            <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-200 text-xs space-y-1">
-              <span className="font-bold block uppercase tracking-wider text-[10px] text-rose-400">Synthesis Error Details</span>
-              <p className="font-mono text-xs break-words">{result.error}</p>
-            </div>
-          )}
-
           {result.chapterText && (
             <div className="space-y-1">
               <span className="text-xs font-extrabold text-cyan-300 uppercase tracking-wider">

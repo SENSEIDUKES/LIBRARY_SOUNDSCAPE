@@ -146,15 +146,15 @@ describe('generateLyriaAudio', () => {
     delete process.env.GEMINI_API_KEY;
   });
 
-  it('should stream audio and return base64 and lyrics with Lyria 3 Pro', async () => {
-    const res = await generateLyriaAudio('Calm river at night with bamboo flutes', 'lyria-3-pro-preview');
+  it('should stream audio and return base64 and lyrics with Lyria 3.5 Pro', async () => {
+    const res = await generateLyriaAudio('Calm river at night with bamboo flutes', 'lyria-3.5-pro-preview');
     expect(res.base64).toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
     expect(res.lyrics).toContain('Sound of distant rivers');
   });
 
-  it('should stream audio with standard lyria-3-clip-preview and default CONFIG.MODEL_ID_FULL', async () => {
-    const resClip = await generateLyriaAudio('Wuxia sword dance', 'lyria-3-clip-preview');
-    expect(resClip.base64).toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+  it('should stream audio with standard lyria-3.5 and default CONFIG.MODEL_ID_FULL', async () => {
+    const res35 = await generateLyriaAudio('Wuxia sword dance', 'lyria-3.5');
+    expect(res35.base64).toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
 
     const resDefault = await generateLyriaAudio('Xianxia meditation');
     expect(resDefault.base64).toBe('UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
@@ -167,7 +167,7 @@ describe('generateLyriaAudio', () => {
     };
     const res = await generateLyriaAudio(
       'Atmospheric mountain pass',
-      'lyria-3-pro-preview',
+      'lyria-3.5-pro-preview',
       30,
       [mockImage]
     );

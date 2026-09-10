@@ -7,6 +7,7 @@
       "dependencies": {
         "@google/genai": "^1.34.0",
         "@seihouse/audio-player": "^1.1.0",
+        "@tanstack/react-virtual": "^3.14.11",
         "express": "^5.2.1",
         "jszip": "^3.10.1",
         "localforage": "^1.10.0",
@@ -204,6 +205,10 @@
     "@seihouse/audio-player": ["@seihouse/audio-player@1.1.0", "", { "dependencies": { "@vercel/firewall": "^1.2.1", "essentia.js": "0.1.3", "lucide-react": "^1.32.0", "react-virtualized-auto-sizer": "^2.0.3", "react-window": "^1.8.10", "wavesurfer.js": "^7.12.7", "zod": "^4.4.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" } }, "sha512-n/q85SUnfiPY6B6OZmLvoYittnqae3v4tEzFxMUrelKTYmpbBDrFOIe2yfPMsYLKBE4Q5xqKvBgLJTjUM5JP8w=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+
+    "@tanstack/react-virtual": ["@tanstack/react-virtual@3.14.11", "", { "dependencies": { "@tanstack/virtual-core": "3.17.9" }, "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-SStWf8bYdTgAquYqG4Pi2+d1XimQKoCIJ94H3jsm0D6UA0yqffvWuvUzrrQ4idewFWq8BSPpahnmLVosJIAs6g=="],
+
+    "@tanstack/virtual-core": ["@tanstack/virtual-core@3.17.9", "", {}, "sha512-M8Bzy7CCMvUjRiuoHVH9mRjyUVczRs8v8RcUEphLFGc445ZP4KQ15Y1sLqhQqJi/HgGJrxfCHnEnIX0x9mVrBg=="],
 
     "@types/babel__core": ["@types/babel__core@7.20.5", "", { "dependencies": { "@babel/parser": "^7.20.7", "@babel/types": "^7.20.7", "@types/babel__generator": "*", "@types/babel__template": "*", "@types/babel__traverse": "*" } }, "sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA=="],
 

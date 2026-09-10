@@ -4,15 +4,14 @@ import { CHINESE_INSTRUMENTS } from '../src/components/ChineseInstrumentList';
 import { AVAILABLE_MUSIC_MODELS, CONFIG } from '../src/config';
 
 describe('Soundscape UI and Helper Logic', () => {
-  it('should contain available Gemini music routing models including Lyria 3 Pro and Clip', () => {
-    expect(AVAILABLE_MUSIC_MODELS.length).toBeGreaterThanOrEqual(2);
+  it('should contain available Gemini music routing models including Lyria 3.5', () => {
+    expect(AVAILABLE_MUSIC_MODELS.length).toBeGreaterThanOrEqual(3);
     const defaultModel = AVAILABLE_MUSIC_MODELS.find(m => m.id === CONFIG.MODEL_ID_FULL);
     expect(defaultModel).toBeDefined();
-    expect(defaultModel?.id).toBe('lyria-3-pro-preview');
-    expect(defaultModel?.name).toBe('Lyria 3 Pro');
-    const clipModel = AVAILABLE_MUSIC_MODELS.find(m => m.id === 'lyria-3-clip-preview');
-    expect(clipModel).toBeDefined();
-    expect(clipModel?.name).toBe('Lyria 3 Clip');
+    expect(defaultModel?.id).toBe('lyria-3.5-pro-preview');
+    expect(defaultModel?.name).toBe('Lyria 3.5 Pro');
+    const standard35 = AVAILABLE_MUSIC_MODELS.find(m => m.id === 'lyria-3.5');
+    expect(standard35).toBeDefined();
   });
   it('should contain all celestial instruments with correct structure', () => {
     expect(CHINESE_INSTRUMENTS.length).toBeGreaterThan(5);

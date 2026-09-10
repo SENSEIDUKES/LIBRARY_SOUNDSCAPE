@@ -1,6 +1,6 @@
 {
   "name": "SEN Soundscapes",
-  "description": "Translates wuxia/xuanhuan chapters and visual scenes into immersion-enhancing soundscapes with Google Lyria 3 music models.",
+  "description": "Translates wuxia/xuanhuan chapters and visual scenes into immersion-enhancing soundscapes with Lyria 3.5.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

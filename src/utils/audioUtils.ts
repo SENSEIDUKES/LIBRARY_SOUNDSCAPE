@@ -12,32 +12,16 @@ import { logFunctionCall } from './logger';
  * @param mimeType The MIME type of the audio (e.g., 'audio/wav').
  * @returns A string representing the object URL, or an empty string if decoding fails.
  */
-export const createAudioUrlFromBase64 = (base64: string, mimeType: string = 'audio/mpeg'): string => {
+export const createAudioUrlFromBase64 = (base64: string, mimeType: string): string => {
   logFunctionCall('createAudioUrlFromBase64', { base64Length: base64.length, mimeType });
   try {
-    // Auto-detect audio format from binary signature if ambiguous
-    let resolvedMime = mimeType || 'audio/mpeg';
-    if (base64.startsWith('UklGR')) {
-      resolvedMime = 'audio/wav';
-    } else if (
-      base64.startsWith('SUQz') ||
-      base64.startsWith('/+NI') ||
-      base64.startsWith('/+MY') ||
-      base64.startsWith('//O') ||
-      base64.startsWith('//u') ||
-      mimeType.includes('mpeg') ||
-      mimeType.includes('mp3')
-    ) {
-      resolvedMime = 'audio/mpeg';
-    }
-
     const binaryString = atob(base64);
     const len = binaryString.length;
     const bytes = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
-    const blob = new Blob([bytes], { type: resolvedMime });
+    const blob = new Blob([bytes], { type: mimeType });
     return URL.createObjectURL(blob);
   } catch (e) {
     console.error("Failed to decode audio base64:", e);
@@ -156,6 +140,12 @@ export const createSyntheticSoundscape = async (
     // Harmonic pentatonic arpeggio notes
     const noteCount = Math.floor(durationSeconds * 2.5);
     const lowerInst = instrumentName.toLowerCase();
+    const oscType: OscillatorType =
+      lowerInst.includes('erhu') || lowerInst.includes('violin') || lowerInst.includes('haegeum') || lowerInst.includes('kokyu')
+        ? 'sawtooth'
+        : lowerInst.includes('dizi') || lowerInst.includes('shakuhachi') || lowerInst.includes('flute') || lowerInst.includes('xiao')
+        ? 'sine'
+        : 'triangle';
 
     for (let i = 0; i < noteCount; i++) {
       const startTime = (i * (durationSeconds / noteCount)) + (Math.random() * 0.25);
@@ -165,13 +155,7 @@ export const createSyntheticSoundscape = async (
       const noteOsc = ctx.createOscillator();
       const noteGain = ctx.createGain();
 
-      if (lowerInst.includes('erhu') || lowerInst.includes('violin') || lowerInst.includes('haegeum') || lowerInst.includes('kokyu')) {
-        noteOsc.type = 'sawtooth';
-      } else if (lowerInst.includes('dizi') || lowerInst.includes('shakuhachi') || lowerInst.includes('flute') || lowerInst.includes('xiao')) {
-        noteOsc.type = 'sine';
-      } else {
-        noteOsc.type = 'triangle';
-      }
+      noteOsc.type = oscType;
 
       noteOsc.frequency.setValueAtTime(freq, startTime);
       const noteLength = 0.8 + Math.random() * 1.2;

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sparkles, Heart, ListMusic, CheckSquare, Square, Loader2, DownloadCloud, Search, X, SlidersHorizontal, Tag } from 'lucide-react';
-import SongResultCard from '../../components/SongResultCard';
+import VirtualizedSoundscapeList from '../../components/VirtualizedSoundscapeList';
 import { SongResult } from '../../../types';
 import { createAndDownloadSoundscapesZip } from '../../utils/zipUtils';
 import { filterSoundscapes, extractVaultQuickTags } from '../../utils/vaultFilter';
@@ -73,6 +73,14 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
 
   const activeFilteredList = activeArchiveTab === 'my-music' ? filteredMyMusic : filteredFavorites;
 
+  // Memoize Set of favorite IDs to provide O(1) lookups during iteration (eliminates O(N^2) complexity)
+  const favoriteIdsSet = useMemo(
+    () => new Set(favoriteResults.map((f) => f.id)),
+    [favoriteResults]
+  );
+
+  const lowerSearchQuery = useMemo(() => searchQuery.toLowerCase(), [searchQuery]);
+
   // Dynamic tags from current tab items for fast clicking
   const quickTags = useMemo(() => {
     return extractVaultQuickTags(currentTabPool);
@@ -86,7 +94,8 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
   };
 
   const handleTagClick = (tag: string) => {
-    if (searchQuery.toLowerCase().includes(tag.toLowerCase())) {
+    const lowerTag = tag.toLowerCase();
+    if (lowerSearchQuery.includes(lowerTag)) {
       // If already in query, remove or clear
       const regex = new RegExp(`\\b${tag}\\b`, 'gi');
       const updated = searchQuery.replace(regex, '').replace(/\s+/g, ' ').trim();
@@ -277,7 +286,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 <Tag className="w-2.5 h-2.5 text-cyan-400" /> Quick Tags:
               </span>
               {quickTags.instruments.map((inst) => {
-                const isActive = searchQuery.toLowerCase().includes(inst.toLowerCase());
+                const isActive = lowerSearchQuery.includes(inst.toLowerCase());
                 return (
                   <button
                     key={`tag-inst-${inst}`}
@@ -294,7 +303,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 );
               })}
               {quickTags.moods.map((m) => {
-                const isActive = searchQuery.toLowerCase().includes(m.toLowerCase());
+                const isActive = lowerSearchQuery.includes(m.toLowerCase());
                 return (
                   <button
                     key={`tag-mood-${m}`}
@@ -337,10 +346,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
 
       {/* Tab: My Music */}
       {activeArchiveTab === 'my-music' && (
-        <div
-          ref={myMusicContainerRef}
-          className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-1"
-        >
+        <div className="flex-1 flex flex-col min-h-0">
           {genResults.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center p-8 py-16 border border-dashed border-white/10 rounded-3xl bg-black/20 flex-1">
               <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-3">
@@ -373,31 +379,27 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
               </button>
             </div>
           ) : (
-            filteredMyMusic.map((result) => {
-              const isFav = favoriteResults.some((f) => f.id === result.id);
-              return (
-                <SongResultCard
-                  key={result.id}
-                  result={{ ...result, isFavorite: isFav }}
-                  isPlaying={isResultPlaying === result.id}
-                  isEncoding={encodingVideoId === result.id}
-                  onToggleExpand={toggleExpand}
-                  onToggleFavorite={toggleFavorite}
-                  onDownloadMP3={handleDownload}
-                  onDownloadVideo={onDownloadVideo}
-                  onPlayStateChange={handlePlayStateChange}
-                  onDelete={onDelete}
-                  onRerollTitle={onRerollTitle}
-                />
-              );
-            })
+            <VirtualizedSoundscapeList
+              items={filteredMyMusic}
+              favoriteIdsSet={favoriteIdsSet}
+              isResultPlaying={isResultPlaying}
+              encodingVideoId={encodingVideoId}
+              toggleExpand={toggleExpand}
+              toggleFavorite={toggleFavorite}
+              handleDownload={handleDownload}
+              onDownloadVideo={onDownloadVideo}
+              handlePlayStateChange={handlePlayStateChange}
+              onDelete={onDelete}
+              onRerollTitle={onRerollTitle}
+              scrollRef={myMusicContainerRef}
+            />
           )}
         </div>
       )}
 
       {/* Tab: Favorites */}
       {activeArchiveTab === 'favorites' && (
-        <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0 space-y-3">
           {favoriteResults.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center p-8 py-16 border border-dashed border-white/10 rounded-3xl bg-black/20 flex-1">
               <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-3">
@@ -432,7 +434,7 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
           ) : (
             <>
               {/* Batch Actions Toolbar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 sm:p-3 bg-slate-950/80 border border-rose-900/40 rounded-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 sm:p-3 bg-slate-950/80 border border-rose-900/40 rounded-2xl shrink-0">
                 <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleSelectAllFavorites}
@@ -478,29 +480,23 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 </button>
               </div>
 
-              {/* List of Filtered Favorites */}
-              <div className="space-y-3 flex-1">
-                {filteredFavorites.map((result) => {
-                  const isSelected = selectedFavoriteIds.has(result.id);
-                  return (
-                    <SongResultCard
-                      key={result.id}
-                      result={{ ...result, isFavorite: true }}
-                      isPlaying={isResultPlaying === result.id}
-                      isEncoding={encodingVideoId === result.id}
-                      onToggleExpand={toggleExpand}
-                      onToggleFavorite={toggleFavorite}
-                      onDownloadMP3={handleDownload}
-                      onDownloadVideo={onDownloadVideo}
-                      onPlayStateChange={handlePlayStateChange}
-                      onDelete={onDelete}
-                      onRerollTitle={onRerollTitle}
-                      isSelected={isSelected}
-                      onToggleSelect={toggleSelectFavorite}
-                    />
-                  );
-                })}
-              </div>
+              {/* List of Filtered Favorites (Virtualized) */}
+              <VirtualizedSoundscapeList
+                items={filteredFavorites}
+                favoriteIdsSet={favoriteIdsSet}
+                isResultPlaying={isResultPlaying}
+                encodingVideoId={encodingVideoId}
+                toggleExpand={toggleExpand}
+                toggleFavorite={toggleFavorite}
+                handleDownload={handleDownload}
+                onDownloadVideo={onDownloadVideo}
+                handlePlayStateChange={handlePlayStateChange}
+                onDelete={onDelete}
+                onRerollTitle={onRerollTitle}
+                selectedFavoriteIds={selectedFavoriteIds}
+                onToggleSelect={toggleSelectFavorite}
+                isFavoriteTab={true}
+              />
             </>
           )}
         </div>

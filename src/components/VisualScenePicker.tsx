@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Camera, X, Sparkles, Image as ImageIcon, Check, Loader2, UploadCloud } from 'lucide-react';
 import { analyzeVisualScene, VisualSceneAnalysis } from '../services/genaiService';
 
@@ -102,6 +102,12 @@ export const VisualScenePicker: React.FC<VisualScenePickerProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<VisualSceneAnalysis | null>(null);
+
+  // Memoize Set of selected preset names for O(1) membership lookup during render
+  const selectedPresetNames = useMemo(
+    () => new Set(selectedImages.map((img) => img.name)),
+    [selectedImages]
+  );
 
   const handleFiles = (files: File[]) => {
     files.forEach((file: File) => {
@@ -228,7 +234,7 @@ export const VisualScenePicker: React.FC<VisualScenePickerProps> = ({
         </span>
         <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2">
           {SCENE_SNAPSHOT_PRESETS.map((preset) => {
-            const isSelected = selectedImages.some((img) => img.name === preset.title);
+            const isSelected = selectedPresetNames.has(preset.title);
             return (
               <button
                 key={preset.id}

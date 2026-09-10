@@ -30,6 +30,16 @@ export const filterSoundscapes = (
     return songs;
   }
 
+  // Precompile query tokens and matchers once outside the iteration loop to avoid O(N * T) complexity
+  const queryTokens = query ? query.split(/\s+/).filter(Boolean) : [];
+  const tokenMatchers = queryTokens.map((token) => {
+    if (token.length <= 2) {
+      const regex = new RegExp(`\\b${token}\\b`, 'i');
+      return (text: string) => regex.test(text);
+    }
+    return (text: string) => text.includes(token);
+  });
+
   return songs.filter((song) => {
     const songCulture = getCultureForSong(
       song.soundscapeConfig,
@@ -109,15 +119,8 @@ export const filterSoundscapes = (
         return true;
       }
 
-      // Check token by token with word boundaries for short tokens (e.g. musical keys 'd', 'c', 'gm')
-      const queryTokens = query.split(/\s+/).filter(Boolean);
-      const matchesAllTokens = queryTokens.every((token) => {
-        if (token.length <= 2) {
-          const regex = new RegExp(`\\b${token}\\b`, 'i');
-          return regex.test(combinedSearchText);
-        }
-        return combinedSearchText.includes(token);
-      });
+      // Check token by token with precompiled matchers
+      const matchesAllTokens = tokenMatchers.every((matcher) => matcher(combinedSearchText));
 
       if (!matchesAllTokens) {
         return false;
