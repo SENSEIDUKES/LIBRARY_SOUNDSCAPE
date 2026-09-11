@@ -1,6 +1,6 @@
 import React, { useRef, useImperativeHandle } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { SongResult } from '../../types';
+import { SongResult, SoundscapeTags } from '../../types';
 import SongResultCard from './SongResultCard';
 
 export interface VirtualizedSoundscapeListProps {
@@ -15,6 +15,8 @@ export interface VirtualizedSoundscapeListProps {
   handlePlayStateChange: (id: string | null) => void;
   onDelete?: (id: string) => void;
   onRerollTitle?: (id: string) => void;
+  onUpdateTitle?: (id: string, newTitle: string) => void;
+  onUpdateTags?: (id: string, tags: SoundscapeTags) => void;
   selectedFavoriteIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
   isFavoriteTab?: boolean;
@@ -42,6 +44,8 @@ export const VirtualizedSoundscapeList = React.forwardRef<
   handlePlayStateChange,
   onDelete,
   onRerollTitle,
+  onUpdateTitle,
+  onUpdateTags,
   selectedFavoriteIds,
   onToggleSelect,
   isFavoriteTab = false,
@@ -108,6 +112,7 @@ export const VirtualizedSoundscapeList = React.forwardRef<
 
           const isFav = isFavoriteTab || favoriteIdsSet.has(song.id);
           const isSelected = selectedFavoriteIds?.has(song.id) ?? false;
+          const isElevated = Boolean(song.isExpanded || isResultPlaying === song.id);
 
           return (
             <div
@@ -120,6 +125,7 @@ export const VirtualizedSoundscapeList = React.forwardRef<
                 left: 0,
                 width: '100%',
                 transform: `translateY(${virtualRow.start}px)`,
+                zIndex: isElevated ? 30 : 1,
               }}
             >
               <SongResultCard
@@ -133,6 +139,8 @@ export const VirtualizedSoundscapeList = React.forwardRef<
                 onPlayStateChange={handlePlayStateChange}
                 onDelete={onDelete}
                 onRerollTitle={onRerollTitle}
+                onUpdateTitle={onUpdateTitle}
+                onUpdateTags={onUpdateTags}
                 isSelected={isSelected}
                 onToggleSelect={onToggleSelect}
               />

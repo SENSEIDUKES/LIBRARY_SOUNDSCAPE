@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Play, Pause, Download, Video, ChevronRight, Share2, Check, Heart, Trash2, Activity, Dices, Volume2 } from 'lucide-react';
+import { Sparkles, Play, Pause, Download, Video, ChevronRight, Share2, Check, Heart, Trash2, Activity, Dices, Volume2, Pencil, X, Tag } from 'lucide-react';
 import { useAudioSession, useAudioTime } from '@seihouse/audio-player';
-import { SongResult } from '../../types';
+import { SongResult, SoundscapeTags } from '../../types';
 import { extractMetadata, formatShareText, copyToClipboard, getCultureForSong, CULTURAL_THEMES, formatDuration } from '../utils/helpers';
 import { detectBpmFromAudio, detectKeyFromAudio } from '../utils/audioUtils';
 import { songResultToTrack } from '../utils/seihouseAudioAdapter';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
+import QuickTaggingSystem from './QuickTaggingSystem';
 
 interface SongResultCardProps {
   result: SongResult;
@@ -14,11 +15,13 @@ interface SongResultCardProps {
   onToggleExpand: (id: string) => void;
   onToggleFavorite?: (id: string) => void;
   onDownloadMP3: (result: SongResult) => void;
-  onDownloadVideo: (result: SongResult, withLyrics?: boolean) => void;
+  onDownloadVideo?: (result: SongResult, withLyrics?: boolean) => void;
   onPlayStateChange: (id: string | null) => void;
   onShare?: (result: SongResult) => void;
   onDelete?: (id: string) => void;
   onRerollTitle?: (id: string) => void;
+  onUpdateTitle?: (id: string, newTitle: string) => void;
+  onUpdateTags?: (id: string, tags: SoundscapeTags) => void;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
 }
@@ -35,6 +38,8 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
   onShare,
   onDelete,
   onRerollTitle,
+  onUpdateTitle,
+  onUpdateTags,
   isSelected = false,
   onToggleSelect,
 }) => {
@@ -43,6 +48,64 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
   const [realBpm, setRealBpm] = useState<number | null>(null);
   const [realKey, setRealKey] = useState<string | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [customTitle, setCustomTitle] = useState(result.title || '');
+  const [showExcerpt, setShowExcerpt] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+  const [isTaggingOpen, setIsTaggingOpen] = useState(true);
+  const [localTags, setLocalTags] = useState<SoundscapeTags>(result.tags || {});
+
+  useEffect(() => {
+    if (result.tags) {
+      setLocalTags(result.tags);
+    }
+  }, [result.tags]);
+
+  const handleTagsChange = (newTags: SoundscapeTags) => {
+    setLocalTags(newTags);
+    if (onUpdateTags) {
+      onUpdateTags(result.id, newTags);
+    }
+  };
+
+  useEffect(() => {
+    if (!isEditingTitle) {
+      setCustomTitle(result.title || '');
+    }
+  }, [result.title, isEditingTitle]);
+
+  const handleStartEditTitle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCustomTitle(result.title || '');
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = (e?: React.MouseEvent | React.FormEvent) => {
+    if (e) e.stopPropagation();
+    const trimmed = customTitle.trim();
+    if (trimmed && onUpdateTitle) {
+      onUpdateTitle(result.id, trimmed);
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelEditTitle = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCustomTitle(result.title || '');
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      handleCancelEditTitle();
+    }
+  };
 
   useEffect(() => {
     if ((result.audioUrl || result.audioBase64) && (!realBpm || !realKey) && !isDetecting) {
@@ -117,10 +180,12 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
   return (
     <div
       id={`soundscape-${result.id}`}
-      className={`rounded-2xl sm:rounded-3xl p-3 sm:p-4 transition-all border ${
+      className={`relative rounded-2xl sm:rounded-3xl p-3 sm:p-4 transition-all duration-200 border ${
         isExpanded
-          ? `${theme.cardExpandedBorder} ${theme.cardExpandedBg} shadow-2xl ring-1 ${theme.ring}`
-          : `${theme.cardBorder} ${theme.cardBg} hover:border-slate-500`
+          ? `z-30 ${theme.cardExpandedBorder} ${theme.cardExpandedBg} shadow-2xl ring-1 ${theme.ring}`
+          : isThisActiveTrack
+          ? `z-20 ${theme.cardBorder} ${theme.cardBg} hover:border-slate-500 shadow-lg`
+          : `z-0 ${theme.cardBorder} ${theme.cardBg} hover:border-slate-500`
       }`}
     >
       <div
@@ -170,11 +235,66 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap min-w-0">
-            <h4 className="font-extrabold text-xs sm:text-base text-white truncate max-w-[120px] xs:max-w-[170px] sm:max-w-none">
-              {isFailed
-                ? 'Generation Diverged'
-                : result.title || (isGenerating ? 'Synthesizing...' : 'Celestial Soundscape')}
-            </h4>
+            {isEditingTitle ? (
+              <div
+                className="flex items-center gap-1 min-w-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="text"
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  onKeyDown={handleTitleKeyDown}
+                  onClick={(e) => e.stopPropagation()}
+                  autoFocus
+                  maxLength={60}
+                  aria-label="Custom song name"
+                  className="bg-slate-900/90 text-white font-extrabold text-xs sm:text-sm px-2 py-0.5 rounded-lg border border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-300 w-32 xs:w-44 sm:w-52 shadow-inner"
+                  placeholder="Enter custom song name..."
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveTitle}
+                  aria-label="Save song name"
+                  title="Save song name"
+                  className="p-1 rounded-md bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/50 cursor-pointer min-w-[22px] min-h-[22px] flex items-center justify-center transition-colors"
+                >
+                  <Check className="w-3 h-3 stroke-[3]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelEditTitle}
+                  aria-label="Cancel renaming"
+                  title="Cancel renaming"
+                  className="p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 cursor-pointer min-w-[22px] min-h-[22px] flex items-center justify-center transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <h4
+                  className="font-extrabold text-xs sm:text-base text-white truncate max-w-[120px] xs:max-w-[170px] sm:max-w-none hover:text-cyan-200 transition-colors"
+                  title={!isGenerating && !isFailed && onUpdateTitle ? "Double click or click pencil to rename" : undefined}
+                  onDoubleClick={!isGenerating && !isFailed && onUpdateTitle ? handleStartEditTitle : undefined}
+                >
+                  {isFailed
+                    ? 'Generation Diverged'
+                    : result.title || (isGenerating ? 'Synthesizing...' : 'Celestial Soundscape')}
+                </h4>
+                {onUpdateTitle && !isGenerating && !isFailed && (
+                  <button
+                    type="button"
+                    onClick={handleStartEditTitle}
+                    className="p-1 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-cyan-300 transition-colors border border-slate-700/60 cursor-pointer min-w-[20px] min-h-[20px] flex items-center justify-center"
+                    title="Rename / custom name song"
+                    aria-label="Rename / custom name song"
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                )}
+              </>
+            )}
             {onRerollTitle && !isGenerating && !isFailed && (
               <button
                 type="button"
@@ -192,6 +312,23 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
             <span className={`px-1.5 py-0.5 text-[8px] sm:text-[9px] font-mono font-bold rounded-md shrink-0 uppercase tracking-tight shadow-xs border ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}>
               {culture}
             </span>
+            {localTags.parent && (
+              <span className={`px-1.5 py-0.5 text-[8px] sm:text-[9px] font-mono font-black rounded-md shrink-0 uppercase tracking-tight shadow-xs border ${
+                localTags.parent === 'ADVENTURE'
+                  ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400/50'
+                  : localTags.parent === 'AMBIENT'
+                  ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400/50'
+                  : localTags.parent === 'EMOTIONS'
+                  ? 'bg-rose-500/30 text-rose-200 border-rose-400/50'
+                  : localTags.parent === 'FIGHTING'
+                  ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
+                  : localTags.parent === 'WAR'
+                  ? 'bg-red-500/30 text-red-200 border-red-400/50'
+                  : 'bg-amber-500/30 text-amber-200 border-amber-400/50'
+              }`}>
+                🏷️ {localTags.parent}
+              </span>
+            )}
             {result.modelId && (
               <span className="hidden xs:inline-block px-1.5 py-0.5 text-[8px] sm:text-[9px] font-mono font-bold bg-slate-800/90 text-slate-300 border border-slate-600 rounded-md shrink-0 uppercase tracking-tight shadow-xs">
                 {result.modelId.replace('-preview', '')}
@@ -301,7 +438,7 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
 
       {/* Expandable details */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-slate-700/80 space-y-4 animate-in fade-in duration-200">
+        <div className="mt-4 pt-4 border-t border-slate-700/80 space-y-4 animate-in fade-in duration-200 relative z-10">
           {(result.audioUrl || result.audioBase64) && (
             <div className="space-y-3">
               {isThisActiveTrack ? (
@@ -390,13 +527,28 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
                 </button>
 
                 <button
-                  onClick={() => onDownloadVideo(result)}
-                  aria-label="Render and export video with visual scroll"
-                  className="py-2.5 px-3 rounded-xl bg-cyan-500/30 hover:bg-cyan-500/40 text-cyan-200 border border-cyan-400/50 text-xs font-extrabold flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px] transition-all shadow-sm"
-                  disabled={isEncoding}
+                  id={`tag-tab-${result.id}`}
+                  type="button"
+                  onClick={() => setIsTaggingOpen((prev) => !prev)}
+                  aria-label={isTaggingOpen ? "Hide quick tagging system" : "Open quick tagging system"}
+                  aria-expanded={isTaggingOpen}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px] transition-all shadow-sm border ${
+                    isTaggingOpen
+                      ? 'bg-amber-500/30 hover:bg-amber-500/40 text-amber-200 border-amber-400 ring-2 ring-amber-400/50 shadow-amber-950/60 font-black'
+                      : localTags.parent
+                      ? 'bg-amber-950/50 hover:bg-amber-900/50 text-amber-300 border-amber-500/50 shadow-sm'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-600'
+                  }`}
                 >
-                  <Video className="w-3.5 h-3.5 shrink-0 text-cyan-300" />
-                  <span className="truncate">Render Video</span>
+                  <Tag className={`w-3.5 h-3.5 shrink-0 ${isTaggingOpen || localTags.parent ? 'text-amber-300' : 'text-slate-400'}`} />
+                  <span className="truncate">
+                    {localTags.parent ? `Tags: ${localTags.parent}` : 'Quick Tags'}
+                  </span>
+                  {localTags.parent && (
+                    <span className="ml-0.5 px-1.5 py-0.2 text-[10px] rounded-full bg-amber-400/20 text-amber-200 border border-amber-400/40 font-mono font-bold">
+                      {[localTags.tone, localTags.energy, localTags.tension].filter(Boolean).length}/3
+                    </span>
+                  )}
                 </button>
 
                 <button
@@ -421,30 +573,75 @@ export const SongResultCard: React.FC<SongResultCardProps> = ({
                   )}
                 </button>
               </div>
+
+              {/* Quick Parent-Child Tagging System */}
+              {isTaggingOpen && (
+                <QuickTaggingSystem
+                  tags={localTags}
+                  onChange={handleTagsChange}
+                  onClose={() => setIsTaggingOpen(false)}
+                />
+              )}
             </div>
           )}
 
           {result.chapterText && (
-            <div className="space-y-1">
-              <span className="text-xs font-extrabold text-cyan-300 uppercase tracking-wider">
-                Excerpt Narrative
-              </span>
-              <div className="bg-slate-950/90 p-3 rounded-xl text-xs font-serif italic text-slate-200 max-h-24 overflow-y-auto custom-scrollbar border border-slate-800">
-                {result.chapterText}
-              </div>
+            <div className="space-y-1.5 rounded-xl bg-slate-950/50 p-2.5 border border-slate-800 transition-all">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowExcerpt(!showExcerpt);
+                }}
+                className="flex items-center justify-between w-full text-xs font-extrabold text-cyan-300 hover:text-cyan-200 uppercase tracking-wider px-1 py-0.5 rounded-md cursor-pointer transition-colors"
+                aria-expanded={showExcerpt}
+                aria-label={showExcerpt ? "Minimize excerpt narrative" : "Expand excerpt narrative"}
+                title={showExcerpt ? "Minimize excerpt narrative" : "Expand excerpt narrative"}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span>Excerpt Narrative</span>
+                  <span className="text-[10px] font-mono text-slate-400 font-normal">
+                    ({showExcerpt ? 'Expanded' : 'Minimized'})
+                  </span>
+                </span>
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform text-cyan-400 ${showExcerpt ? 'rotate-90' : ''}`} />
+              </button>
+              {showExcerpt && (
+                <div className="bg-slate-950/90 p-3 rounded-lg text-xs font-serif italic text-slate-200 max-h-28 overflow-y-auto custom-scrollbar border border-slate-800 animate-in fade-in duration-150">
+                  {result.chapterText}
+                </div>
+              )}
             </div>
           )}
 
           {result.logs && result.logs.length > 0 && (
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Synthesis Logs
-              </span>
-              <div className="bg-slate-950 p-3 rounded-xl font-mono text-xs text-cyan-300 max-h-24 overflow-y-auto custom-scrollbar space-y-1 border border-slate-800">
-                {result.logs.map((log, idx) => (
-                  <div key={idx}>{log}</div>
-                ))}
-              </div>
+            <div className="space-y-1.5 rounded-xl bg-slate-950/50 p-2.5 border border-slate-800 transition-all">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowLogs(!showLogs);
+                }}
+                className="flex items-center justify-between w-full text-xs font-bold text-slate-300 hover:text-white uppercase tracking-wider px-1 py-0.5 rounded-md cursor-pointer transition-colors"
+                aria-expanded={showLogs}
+                aria-label={showLogs ? "Minimize synthesis logs" : "Expand synthesis logs"}
+                title={showLogs ? "Minimize synthesis logs" : "Expand synthesis logs"}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span>Synthesis Logs</span>
+                  <span className="text-[10px] font-mono text-slate-400 font-normal">
+                    ({result.logs.length} {result.logs.length === 1 ? 'entry' : 'entries'} • {showLogs ? 'Expanded' : 'Minimized'})
+                  </span>
+                </span>
+                <ChevronRight className={`w-3.5 h-3.5 transition-transform text-slate-400 ${showLogs ? 'rotate-90' : ''}`} />
+              </button>
+              {showLogs && (
+                <div className="bg-slate-950 p-3 rounded-lg font-mono text-xs text-cyan-300 max-h-28 overflow-y-auto custom-scrollbar space-y-1 border border-slate-800 animate-in fade-in duration-150">
+                  {result.logs.map((log, idx) => (
+                    <div key={idx}>{log}</div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

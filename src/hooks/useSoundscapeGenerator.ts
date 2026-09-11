@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import localforage from 'localforage';
-import { GenerationState, SongResult, LyricsOption } from '../../types';
+import { GenerationState, SongResult, LyricsOption, SoundscapeTags } from '../../types';
 import { logFunctionCall } from '../utils/logger';
 import { createAudioUrlFromBase64 } from '../utils/audioUtils';
 import { generateSongTitle, generateLyriaAudio } from '../services/genaiService';
@@ -198,6 +198,15 @@ export function useSoundscapeGenerator() {
     }));
   }, []);
 
+  const updateTrackTags = useCallback((id: string, tags: SoundscapeTags) => {
+    setGen((prev) => ({
+      ...prev,
+      results: prev.results.map((r) =>
+        r.id === id ? { ...r, tags } : r
+      ),
+    }));
+  }, []);
+
   const rerollTrackTitle = useCallback((id: string) => {
     setGen((prev) => ({
       ...prev,
@@ -224,6 +233,7 @@ export function useSoundscapeGenerator() {
     deleteResult,
     handleGenerate,
     updateTrackTitle,
+    updateTrackTags,
     rerollTrackTitle
   };
 }

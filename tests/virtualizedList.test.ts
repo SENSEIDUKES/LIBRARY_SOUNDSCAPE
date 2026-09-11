@@ -5,19 +5,30 @@ import { SongResult } from '../types';
 const createMockSoundscape = (id: string, title: string): SongResult => ({
   id,
   title,
+  status: 'completed',
+  logs: ['[00:00] Initialized'],
   audioUrl: `https://example.com/${id}.mp3`,
   audioBase64: 'UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=',
-  prompt: 'A tranquil guzheng soundscape',
+  coverImageUrl: null,
+  lyrics: '',
+  metadata: '',
+  fullPrompt: 'A tranquil guzheng soundscape',
+  error: null,
+  timestamp: new Date(),
+  isExpanded: false,
+  originalPrompt: 'A tranquil guzheng soundscape',
+  originalLyricsOption: 'Instrumental',
   soundscapeConfig: {
     instrument: 'Guzheng',
     mood: 'Tranquil',
-    tempo: 'Moderate',
-    atmosphere: 'Mountain mist',
-    rhythm: 'Flowing',
-    culturalContext: 'Chinese',
+    pacing: 'Moderate',
+    mainTexture: 'Mountain mist',
+    environmentalTexture: '',
+    sceneAtmosphere: '',
+    emotionalDirection: '',
+    endingDirection: '',
+    vocals: '',
   },
-  timestamp: Date.now(),
-  logs: ['[00:00] Initialized'],
 });
 
 describe('VirtualizedSoundscapeList & Virtualizer Engine', () => {
@@ -39,7 +50,7 @@ describe('VirtualizedSoundscapeList & Virtualizer Engine', () => {
       gap,
       initialRect: { width: 800, height: 600 },
       overscan: 2,
-    });
+    } as any);
 
     // Total size = (20 * 165) + (19 * 14) = 3300 + 266 = 3566
     const expectedTotalSize = itemCount * estimateSize + (itemCount - 1) * gap;
@@ -77,7 +88,7 @@ describe('VirtualizedSoundscapeList & Virtualizer Engine', () => {
       initialRect: { width: 800, height: viewportHeight },
       initialOffset: 3000,
       overscan: 4,
-    });
+    } as any);
 
     const virtualItems = virtualizer.getVirtualItems();
 
@@ -98,7 +109,7 @@ describe('VirtualizedSoundscapeList & Virtualizer Engine', () => {
       getScrollElement: () => ({ scrollTop: 0, clientHeight: 500 } as unknown as Element),
       estimateSize: () => 165,
       gap: 14,
-    });
+    } as any);
 
     expect(virtualizer.getTotalSize()).toBe(0);
     expect(virtualizer.getVirtualItems()).toEqual([]);
@@ -121,5 +132,24 @@ describe('VirtualizedSoundscapeList & Virtualizer Engine', () => {
     expect(selectedIds.has(songs[0].id)).toBe(true);
     expect(selectedIds.has(songs[1].id)).toBe(false);
     expect(selectedIds.has(songs[2].id)).toBe(true);
+  });
+
+  it('assigns elevated zIndex to expanded or active soundscape items to prevent details clipping behind siblings', () => {
+    const calculateRowZIndex = (isExpanded: boolean, isPlaying: boolean) => {
+      const isElevated = Boolean(isExpanded || isPlaying);
+      return isElevated ? 30 : 1;
+    };
+
+    // Standard collapsed item has default stacking order
+    expect(calculateRowZIndex(false, false)).toBe(1);
+
+    // Opening / expanding the audio player elevates z-index to pop above siblings
+    expect(calculateRowZIndex(true, false)).toBe(30);
+
+    // Active playing soundscape is also elevated
+    expect(calculateRowZIndex(false, true)).toBe(30);
+
+    // Both expanded and playing stays elevated
+    expect(calculateRowZIndex(true, true)).toBe(30);
   });
 });

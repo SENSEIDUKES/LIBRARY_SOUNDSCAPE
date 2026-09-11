@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import localforage from 'localforage';
-import { SongResult, GenerationState } from '../../types';
+import { SongResult, GenerationState, SoundscapeTags } from '../../types';
 import { createAudioUrlFromBase64 } from '../utils/audioUtils';
 
 export function useFavorites(genResults: SongResult[]) {
@@ -72,5 +72,17 @@ export function useFavorites(genResults: SongResult[]) {
     setFavoriteResults((prev) => prev.filter((r) => r.id !== id));
   };
 
-  return { favoriteResults, toggleFavorite, removeFavorite };
+  const updateFavoriteTitle = (id: string, newTitle: string) => {
+    setFavoriteResults((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, title: newTitle } : r))
+    );
+  };
+
+  const updateFavoriteTags = (id: string, tags: SoundscapeTags) => {
+    setFavoriteResults((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, tags } : r))
+    );
+  };
+
+  return { favoriteResults, toggleFavorite, removeFavorite, updateFavoriteTitle, updateFavoriteTags };
 }

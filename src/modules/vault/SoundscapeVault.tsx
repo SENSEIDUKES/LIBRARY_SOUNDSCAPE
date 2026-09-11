@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sparkles, Heart, ListMusic, CheckSquare, Square, Loader2, DownloadCloud, Search, X, SlidersHorizontal, Tag } from 'lucide-react';
 import VirtualizedSoundscapeList from '../../components/VirtualizedSoundscapeList';
-import { SongResult } from '../../../types';
+import { SongResult, SoundscapeTags } from '../../../types';
 import { createAndDownloadSoundscapesZip } from '../../utils/zipUtils';
 import { filterSoundscapes, extractVaultQuickTags } from '../../utils/vaultFilter';
 
@@ -19,6 +19,8 @@ interface SoundscapeVaultProps {
   handlePlayStateChange: (id: string | null) => void;
   onDelete?: (id: string) => void;
   onRerollTitle?: (id: string) => void;
+  onUpdateTitle?: (id: string, newTitle: string) => void;
+  onUpdateTags?: (id: string, tags: SoundscapeTags) => void;
 }
 
 const CULTURES: { id: string; label: string; activeClass: string }[] = [
@@ -43,6 +45,8 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
   handlePlayStateChange,
   onDelete,
   onRerollTitle,
+  onUpdateTitle,
+  onUpdateTags,
 }) => {
   const myMusicContainerRef = useRef<HTMLDivElement>(null);
 
@@ -391,6 +395,8 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
               handlePlayStateChange={handlePlayStateChange}
               onDelete={onDelete}
               onRerollTitle={onRerollTitle}
+              onUpdateTitle={onUpdateTitle}
+              onUpdateTags={onUpdateTags}
               scrollRef={myMusicContainerRef}
             />
           )}
@@ -493,6 +499,8 @@ export const SoundscapeVault: React.FC<SoundscapeVaultProps> = ({
                 handlePlayStateChange={handlePlayStateChange}
                 onDelete={onDelete}
                 onRerollTitle={onRerollTitle}
+                onUpdateTitle={onUpdateTitle}
+                onUpdateTags={onUpdateTags}
                 selectedFavoriteIds={selectedFavoriteIds}
                 onToggleSelect={toggleSelectFavorite}
                 isFavoriteTab={true}

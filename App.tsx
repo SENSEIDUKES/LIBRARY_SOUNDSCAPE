@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, Wand2, ListMusic } from 'lucide-react';
-import { LyricsOption, SongResult } from './types';
+import { LyricsOption, SongResult, SoundscapeTags } from './types';
 import { CONFIG } from './src/config';
 import { getAutoExportName, getRandomItem } from './src/utils/helpers';
 import { handleDownloadVideo } from './src/utils/videoUtils';
@@ -134,8 +134,8 @@ const App: React.FC = () => {
   });
 
   // Custom Hooks
-  const { gen, setGen, toggleExpand, deleteResult, handleGenerate: handleGenerateCore, rerollTrackTitle } = useSoundscapeGenerator();
-  const { favoriteResults, toggleFavorite, removeFavorite } = useFavorites(gen.results);
+  const { gen, setGen, toggleExpand, deleteResult, handleGenerate: handleGenerateCore, rerollTrackTitle, updateTrackTitle, updateTrackTags } = useSoundscapeGenerator();
+  const { favoriteResults, toggleFavorite, removeFavorite, updateFavoriteTitle, updateFavoriteTags } = useFavorites(gen.results);
   const {
     isResultPlaying,
     setIsResultPlaying,
@@ -143,6 +143,16 @@ const App: React.FC = () => {
     handlePlayStateChange,
     togglePresetPlaying
   } = useAudioPlayback();
+
+  const handleUpdateTrackTitle = (id: string, newTitle: string) => {
+    updateTrackTitle(id, newTitle);
+    updateFavoriteTitle(id, newTitle);
+  };
+
+  const handleUpdateTrackTags = (id: string, tags: SoundscapeTags) => {
+    updateTrackTags(id, tags);
+    updateFavoriteTags(id, tags);
+  };
 
   const handleDeleteResult = (id: string) => {
     deleteResult(id);
@@ -432,6 +442,8 @@ const App: React.FC = () => {
             handlePlayStateChange={handlePlayStateChange}
             onDelete={handleDeleteResult}
             onRerollTitle={rerollTrackTitle}
+            onUpdateTitle={handleUpdateTrackTitle}
+            onUpdateTags={handleUpdateTrackTags}
           />
         </div>
       </main>

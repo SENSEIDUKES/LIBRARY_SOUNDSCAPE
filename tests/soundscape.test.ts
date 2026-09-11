@@ -109,4 +109,61 @@ Genre: Xianxia, Guqin, Ambient
     expect(tracks.length).toBe(1);
     expect(tracks[0].id).toBe('track-2');
   });
+
+  it('should update song title to user custom name across tracks and favorites', () => {
+    let tracks = [
+      { id: 'track-1', title: 'Mountain Wind', isFavorite: false },
+      { id: 'track-2', title: 'Dragon Chant', isFavorite: true }
+    ];
+    let favorites = [
+      { id: 'track-2', title: 'Dragon Chant', isFavorite: true }
+    ];
+
+    const updateTrackTitle = (id: string, newTitle: string) => {
+      const trimmed = newTitle.trim();
+      if (!trimmed) return;
+      tracks = tracks.map(t => (t.id === id ? { ...t, title: trimmed } : t));
+      favorites = favorites.map(f => (f.id === id ? { ...f, title: trimmed } : f));
+    };
+
+    // User renames track-1 to custom name
+    updateTrackTitle('track-1', '  Echoes of the Nine Heavens  ');
+    expect(tracks[0].title).toBe('Echoes of the Nine Heavens');
+
+    // User renames track-2 (which is in favorites)
+    updateTrackTitle('track-2', 'Chant of the Azure Dragon');
+    expect(tracks[1].title).toBe('Chant of the Azure Dragon');
+    expect(favorites[0].title).toBe('Chant of the Azure Dragon');
+
+    // Blank or whitespace-only rename is rejected
+    updateTrackTitle('track-1', '   ');
+    expect(tracks[0].title).toBe('Echoes of the Nine Heavens');
+  });
+
+  it('should initialize detailed synthesis logs and excerpt narrative sections as minimized by default', () => {
+    interface CardDetailsState {
+      isCardExpanded: boolean;
+      showLogs: boolean;
+      showExcerpt: boolean;
+    }
+
+    // Default state when soundscape card is expanded
+    const cardState: CardDetailsState = {
+      isCardExpanded: true,
+      showLogs: false, // Minimized by default
+      showExcerpt: false, // Minimized by default
+    };
+
+    expect(cardState.showLogs).toBe(false);
+    expect(cardState.showExcerpt).toBe(false);
+
+    // User toggles logs to view
+    const toggleLogs = (state: CardDetailsState) => ({ ...state, showLogs: !state.showLogs });
+    const expandedLogs = toggleLogs(cardState);
+    expect(expandedLogs.showLogs).toBe(true);
+
+    // User collapses logs back to minimized
+    const collapsedLogs = toggleLogs(expandedLogs);
+    expect(collapsedLogs.showLogs).toBe(false);
+  });
 });

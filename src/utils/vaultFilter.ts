@@ -92,6 +92,10 @@ export const filterSoundscapes = (
       const metaKey = (extMeta.key || '').toLowerCase();
       const metaTempo = (extMeta.tempo || '').toLowerCase();
       const cultureStr = songCulture.toLowerCase();
+      const parentTag = (song.tags?.parent || '').toLowerCase();
+      const toneTag = (song.tags?.tone || '').toLowerCase();
+      const energyTag = (song.tags?.energy || '').toLowerCase();
+      const tensionTag = (song.tags?.tension || '').toLowerCase();
 
       const combinedSearchText = [
         title,
@@ -112,6 +116,10 @@ export const filterSoundscapes = (
         metaKey,
         metaTempo,
         cultureStr,
+        parentTag,
+        toneTag,
+        energyTag,
+        tensionTag,
       ].join(' ');
 
       // If exact phrase matches, include immediately

@@ -1,6 +1,18 @@
 
 export type LyricsOption = 'Auto' | 'Custom' | 'Instrumental';
 
+export type ParentTag = 'ADVENTURE' | 'AMBIENT' | 'EMOTIONS' | 'FIGHTING' | 'WAR' | 'SPECIAL';
+export type ToneTag = 'Bright' | 'Neutral' | 'Dark';
+export type EnergyTag = 'Low' | 'Medium' | 'High';
+export type TensionTag = 'Calm' | 'Suspenseful' | 'Urgent';
+
+export interface SoundscapeTags {
+  parent?: ParentTag;
+  tone?: ToneTag;
+  energy?: EnergyTag;
+  tension?: TensionTag;
+}
+
 export interface ExampleSong {
   id: string;
   title: string;
@@ -46,6 +58,7 @@ export interface SongResult {
     vocals: string;
     intensity?: number;
   };
+  tags?: SoundscapeTags;
 }
 
 export interface GenerationState {
